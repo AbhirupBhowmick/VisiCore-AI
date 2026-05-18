@@ -18,7 +18,7 @@ spring:
     show-sql: true
   sql:
     init:
-      mode: always
+      mode: ${SPRING_SQL_INIT_MODE:never}
   rabbitmq:
     addresses: ${SPRING_RABBITMQ_ADDRESSES:}
     host: ${SPRING_RABBITMQ_HOST:localhost}
