@@ -1,0 +1,125 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Geist:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
+
+@import "tailwindcss";
+
+@theme {
+  --color-on-secondary-fixed: #1c1b1b;
+  --color-secondary-container: #4a4949;
+  --color-on-tertiary-container: #461f00;
+  --color-tertiary-container: #df7412;
+  --color-surface: #10131a;
+  --color-tertiary-fixed-dim: #ffb786;
+  --color-primary-fixed: #d8e2ff;
+  --color-on-secondary-container: #bab8b7;
+  --color-on-tertiary-fixed-variant: #723600;
+  --color-on-background: #e1e2ec;
+  --color-on-surface-variant: #c2c6d6;
+  --color-secondary-fixed-dim: #c8c6c5;
+  --color-outline: #8c909f;
+  --color-surface-container-highest: #32353c;
+  --color-background: #10131a;
+  --color-tertiary-fixed: #ffdcc6;
+  --color-secondary-fixed: #e5e2e1;
+  --color-inverse-on-surface: #2e3038;
+  --color-surface-variant: #32353c;
+  --color-primary-fixed-dim: #adc6ff;
+  --color-surface-container-lowest: #0b0e15;
+  --color-on-secondary: #313030;
+  --color-on-secondary-fixed-variant: #474646;
+  --color-primary: #adc6ff;
+  --color-inverse-primary: #005ac2;
+  --color-error: #ffb4ab;
+  --color-on-error-container: #ffdad6;
+  --color-on-primary-fixed-variant: #004395;
+  --color-outline-variant: #424754;
+  --color-surface-container-high: #272a31;
+  --color-on-surface: #e1e2ec;
+  --color-primary-container: #4d8eff;
+  --color-on-primary-container: #00285d;
+  --color-surface-tint: #adc6ff;
+  --color-inverse-surface: #e1e2ec;
+  --color-secondary: #c8c6c5;
+  --color-surface-bright: #363941;
+  --color-error-container: #93000a;
+  --color-tertiary: #ffb786;
+  --color-surface-container: #1d2027;
+  --color-on-primary-fixed: #001a42;
+  --color-surface-container-low: #191b23;
+  --color-surface-dim: #10131a;
+  --color-on-primary: #002e6a;
+  --color-on-error: #690005;
+  --color-on-tertiary: #502400;
+  --color-on-tertiary-fixed: #311400;
+
+  /* Custom spacings only - prefixing to avoid breaking default Tailwind layouts (e.g. max-w-xl) */
+  --spacing-custom-margin: 32px;
+  --spacing-custom-gutter: 24px;
+  --spacing-custom-base: 4px;
+
+  --font-body-md: "Inter", sans-serif;
+  --font-headline-lg: "Geist", sans-serif;
+  --font-label-md: "Geist", sans-serif;
+  --font-headline-md: "Geist", sans-serif;
+  --font-display-lg: "Geist", sans-serif;
+  --font-body-lg: "Inter", sans-serif;
+  --font-code-sm: "Geist", sans-serif;
+  --font-headline-lg-mobile: "Geist", sans-serif;
+  --font-body-sm: "Inter", sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+:root {
+  --background: #000000;
+  --foreground: #ffffff;
+  --card: #0a0a0a;
+  --border: #262626;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: 'Inter', sans-serif;
+}
+
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+.glow-effect {
+  box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
+}
+
+.glow-effect-hover:hover {
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.6);
+}
+
+.text-glow {
+  text-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
+}
+
+@keyframes scan {
+  0% { top: 0; opacity: 0; }
+  10% { opacity: 0.8; }
+  90% { opacity: 0.8; }
+  100% { top: 100%; opacity: 0; }
+}
+
+.scan-line {
+  animation: scan 4s linear infinite;
+}
+
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+.rotate-x-\[5deg\] {
+  transform: rotateX(5deg);
+}
+
+.glow-effect-hover {
+  transition: all 0.2s ease-in-out;
+}

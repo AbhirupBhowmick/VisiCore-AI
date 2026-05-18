@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+pika
+psycopg2-binary
+google-genai
+minio
+python-dotenv
