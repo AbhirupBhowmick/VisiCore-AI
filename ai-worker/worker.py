@@ -17,21 +17,24 @@ load_dotenv()
 
 # ─── Config ──────────────────────────────────────────────────────────────────
 
+DB_URL = os.environ.get("DATABASE_URL") # Support complete database connection URL
 DB_CONFIG = {
-    "host": "localhost",
-    "port": 5432,
-    "user": "admin",
-    "password": "password",
-    "dbname": "aivideodb"
+    "host": os.environ.get("DB_HOST", "localhost"),
+    "port": int(os.environ.get("DB_PORT", 5432)),
+    "user": os.environ.get("DB_USER", "admin"),
+    "password": os.environ.get("DB_PASSWORD", "password"),
+    "dbname": os.environ.get("DB_NAME", "aivideodb")
 }
 
-RABBITMQ_HOST = "localhost"
+RABBITMQ_URL = os.environ.get("RABBITMQ_URL") # Support CloudAMQP URL
+RABBITMQ_HOST = os.environ.get("RABBITMQ_HOST", "localhost")
 QUEUE_NAME = "video_processing_queue"
 
-MINIO_ENDPOINT  = "localhost:9000"
-MINIO_ACCESS    = "minioadmin"
-MINIO_SECRET    = "minioadmin"
-MINIO_BUCKET    = "aivideo"
+MINIO_ENDPOINT = os.environ.get("MINIO_ENDPOINT", "localhost:9000")
+MINIO_ACCESS   = os.environ.get("MINIO_ACCESS", "minioadmin")
+MINIO_SECRET   = os.environ.get("MINIO_SECRET", "minioadmin")
+MINIO_BUCKET   = os.environ.get("MINIO_BUCKET", "aivideo")
+MINIO_SECURE   = os.environ.get("MINIO_SECURE", "false").lower() == "true" or ".supabase.co" in MINIO_ENDPOINT or ".amazonaws.com" in MINIO_ENDPOINT
 
 # Gemini API Key (reads from env or local .env file)
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
@@ -39,6 +42,8 @@ GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
 # ─── DB helpers ──────────────────────────────────────────────────────────────
 
 def get_db():
+    if DB_URL:
+        return psycopg2.connect(DB_URL)
     return psycopg2.connect(**DB_CONFIG)
 
 def update_video_status(video_id, status):
@@ -83,7 +88,7 @@ def get_video_title(video_id):
 
 def download_from_minio(minio_path: str, dest_path: str):
     """Download the video file from MinIO to a local temp path."""
-    client = Minio(MINIO_ENDPOINT, access_key=MINIO_ACCESS, secret_key=MINIO_SECRET, secure=False)
+    client = Minio(MINIO_ENDPOINT, access_key=MINIO_ACCESS, secret_key=MINIO_SECRET, secure=MINIO_SECURE)
     
     # Normalize: strip leading slashes, then strip bucket name prefix if present
     object_name = minio_path.lstrip('/')
@@ -286,7 +291,11 @@ def main():
         print("=" * 60)
 
     print("Connecting to RabbitMQ…")
-    connection = pika.BlockingConnection(pika.ConnectionParameters(host=RABBITMQ_HOST))
+    if RABBITMQ_URL:
+        params = pika.URLParameters(RABBITMQ_URL)
+    else:
+        params = pika.ConnectionParameters(host=RABBITMQ_HOST)
+    connection = pika.BlockingConnection(params)
     channel = connection.channel()
     channel.queue_declare(queue=QUEUE_NAME, durable=True)
     channel.basic_qos(prefetch_count=1)
