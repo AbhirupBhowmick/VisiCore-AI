@@ -11,6 +11,8 @@ from google import genai
 from google.genai import types
 
 from dotenv import load_dotenv
+import threading
+from http.server import HTTPServer, BaseHTTPRequestHandler
 
 # Load local environment variables from .env file if it exists
 load_dotenv()
@@ -279,6 +281,22 @@ def process_video_task(ch, method, properties, body):
     finally:
         ch.basic_ack(delivery_tag=method.delivery_tag)
 
+# ─── Health Check HTTP Server for Free Tier ───────────────────────────────────
+
+class HealthCheckHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.send_header("Content-type", "text/plain")
+        self.end_headers()
+        self.wfile.write(b"OK")
+    def log_message(self, format, *args):
+        pass # Suppress log noise from health check requests
+
+def run_health_check_server(port):
+    server = HTTPServer(('0.0.0.0', port), HealthCheckHandler)
+    print(f"[*] Starting background health check server on port {port}")
+    server.serve_forever()
+
 # ─── Main ─────────────────────────────────────────────────────────────────────
 
 def main():
@@ -289,6 +307,11 @@ def main():
         print("   Run: export GEMINI_API_KEY='your-key-here'")
         print("   Then restart: ./venv/bin/python worker.py")
         print("=" * 60)
+
+    # Start health check server on a background daemon thread
+    port = int(os.environ.get("PORT", 8000))
+    health_thread = threading.Thread(target=run_health_check_server, args=(port,), daemon=True)
+    health_thread.start()
 
     print("Connecting to RabbitMQ…")
     if RABBITMQ_URL:
