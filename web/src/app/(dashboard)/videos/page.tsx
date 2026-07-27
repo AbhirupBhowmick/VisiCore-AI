@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import api from '../../../lib/api';
-import { PlayCircle, Clock, CheckCircle, AlertCircle, FileVideo, Search, Grid, List, Plus, Video, Calendar, Eye, Trash2 } from 'lucide-react';
+import { PlayCircle, Clock, CheckCircle, AlertCircle, FileVideo, Search, Grid, List, Plus, Calendar, Eye, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 
 interface VideoItem {

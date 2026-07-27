@@ -27,8 +27,9 @@ function LoginContent() {
       const response = await api.post('/api/auth/login', { email, password });
       setToken(response.data.token);
       router.push('/dashboard');
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
+    } catch (err: unknown) {
+      const errorResponse = err as { response?: { data?: { message?: string } } };
+      setError(errorResponse.response?.data?.message || 'Login failed. Please check your credentials.');
     } finally {
       setLoading(false);
     }
@@ -120,7 +121,7 @@ function LoginContent() {
         </form>
 
         <div className="mt-8 text-center text-sm text-gray-400 border-t border-[#1a1a1a] pt-6">
-          Don't have an account? <Link href="/signup" className="text-blue-400 hover:text-blue-300 font-semibold transition-colors">Sign up free</Link>
+          Don&apos;t have an account? <Link href="/signup" className="text-blue-400 hover:text-blue-300 font-semibold transition-colors">Sign up free</Link>
         </div>
       </div>
     </div>

@@ -21,8 +21,9 @@ export default function SignupPage() {
     try {
       await api.post('/api/auth/register', { email, password, role: 'USER' });
       router.push('/login?registered=true');
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Registration failed. Please try again.');
+    } catch (err: unknown) {
+      const errorResponse = err as { response?: { data?: { message?: string } } };
+      setError(errorResponse.response?.data?.message || 'Registration failed. Please try again.');
     } finally {
       setLoading(false);
     }

@@ -2,9 +2,8 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { UploadCloud, CheckCircle, AlertCircle, FileVideo, Sparkles, ChevronRight, Video, FileText } from 'lucide-react';
+import { UploadCloud, CheckCircle, AlertCircle, FileVideo, Sparkles, ChevronRight } from 'lucide-react';
 import api from '../../../lib/api';
-import Link from 'next/link';
 
 export default function UploadPage() {
   const [isDragging, setIsDragging] = useState(false);
@@ -86,9 +85,10 @@ export default function UploadPage() {
       setTimeout(() => {
         router.push('/dashboard');
       }, 1500);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setStatus('error');
-      setErrorMsg(err.response?.data?.message || 'Failed to upload video stream. Please check connection.');
+      const errorResponse = err as { response?: { data?: { message?: string } } };
+      setErrorMsg(errorResponse.response?.data?.message || 'Failed to upload video stream. Please check connection.');
     }
   };
 

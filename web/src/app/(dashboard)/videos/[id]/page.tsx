@@ -40,7 +40,6 @@ export default function VideoDetailPage() {
   const id = params.id as string;
 
   const [activeTab, setActiveTab] = useState<'transcript' | 'summary' | 'highlights'>('transcript');
-  const [parsedTimestamps, setParsedTimestamps] = useState<Timestamp[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -54,29 +53,32 @@ export default function VideoDetailPage() {
       const response = await api.get(`/api/videos/${id}`);
       return response.data;
     },
-    refetchInterval: (query: any) => (query?.state?.data?.status === 'COMPLETED' || query?.state?.data?.status === 'FAILED' ? false : 3000),
+    refetchInterval: (q) => (q?.state?.data?.status === 'COMPLETED' || q?.state?.data?.status === 'FAILED' ? false : 3000),
   });
 
-  useEffect(() => {
-    if (video?.transcript?.timestamps) {
-      try {
-        setParsedTimestamps(JSON.parse(video.transcript.timestamps));
-      } catch (e) {
-        console.error("Failed to parse timestamps", e);
-      }
+  const parsedTimestamps = React.useMemo<Timestamp[]>(() => {
+    if (!video?.transcript?.timestamps) return [];
+    if (Array.isArray(video.transcript.timestamps)) return video.transcript.timestamps as Timestamp[];
+    try {
+      return typeof video.transcript.timestamps === 'string' ? JSON.parse(video.transcript.timestamps) : [];
+    } catch {
+      return [];
     }
   }, [video]);
 
   useEffect(() => {
-    if (video) {
-      setMessages([
-        {
-          sender: 'ai',
-          text: `Hi! I have successfully analyzed "${video.title}". Ask me anything about the content, or tell me to find specific moments, summarize discussions, or extract action items.`
-        }
-      ]);
+    if (video && messages.length === 0) {
+      const timer = setTimeout(() => {
+        setMessages([
+          {
+            sender: 'ai',
+            text: `Hi! I have successfully analyzed "${video.title}". Ask me anything about the content, or tell me to find specific moments, summarize discussions, or extract action items.`
+          }
+        ]);
+      }, 0);
+      return () => clearTimeout(timer);
     }
-  }, [video?.id]);
+  }, [video, messages.length]);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });

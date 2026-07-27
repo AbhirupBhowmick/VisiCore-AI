@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { 
   User, Lock, Key, Cpu, Bell, Webhook, 
   Eye, EyeOff, Copy, Check, Sparkles, ShieldAlert, CheckCircle 
@@ -21,19 +21,28 @@ const getEmailFromToken = (token: string | null) => {
         .join('')
     );
     return JSON.parse(jsonPayload).sub || '';
-  } catch (e) {
+  } catch {
     return '';
   }
 };
 
 export default function SettingsPage() {
-  const token = useAuthStore((state: any) => state.token);
+  const token = useAuthStore((state) => state.token);
   const email = getEmailFromToken(token);
 
   // Profile preferences (Saved locally in localStorage for persistent client state)
-  const [neuralMode, setNeuralMode] = useState('accuracy'); // accuracy | speed
-  const [webhooksActive, setWebhooksActive] = useState(false);
-  const [alertsActive, setAlertsActive] = useState(true);
+  const [neuralMode, setNeuralMode] = useState(() => {
+    if (typeof window !== 'undefined') return localStorage.getItem('vc_pref_neural_mode') || 'accuracy';
+    return 'accuracy';
+  });
+  const [webhooksActive, setWebhooksActive] = useState(() => {
+    if (typeof window !== 'undefined') return localStorage.getItem('vc_pref_webhooks') === 'true';
+    return false;
+  });
+  const [alertsActive, setAlertsActive] = useState(() => {
+    if (typeof window !== 'undefined') return localStorage.getItem('vc_pref_alerts') === 'true';
+    return true;
+  });
 
   // Password change states
   const [currentPassword, setCurrentPassword] = useState('');
@@ -50,17 +59,6 @@ export default function SettingsPage() {
 
   // Platform preferences loading/saving local states
   const [saveStatus, setSaveStatus] = useState('');
-
-  useEffect(() => {
-    // Load persisted preferences
-    const storedNeuralMode = localStorage.getItem('vc_pref_neural_mode');
-    const storedWebhooks = localStorage.getItem('vc_pref_webhooks');
-    const storedAlerts = localStorage.getItem('vc_pref_alerts');
-
-    if (storedNeuralMode) setNeuralMode(storedNeuralMode);
-    if (storedWebhooks) setWebhooksActive(storedWebhooks === 'true');
-    if (storedAlerts) setAlertsActive(storedAlerts === 'true');
-  }, []);
 
   const handleSavePreferences = () => {
     localStorage.setItem('vc_pref_neural_mode', neuralMode);
@@ -104,8 +102,9 @@ export default function SettingsPage() {
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
-    } catch (err: any) {
-      setPasswordError(err.response?.data?.message || 'Failed to change password. Please check current credentials.');
+    } catch (err: unknown) {
+      const errorResponse = err as { response?: { data?: { message?: string } } };
+      setPasswordError(errorResponse.response?.data?.message || 'Failed to change password. Please check current credentials.');
     } finally {
       setPasswordLoading(false);
     }

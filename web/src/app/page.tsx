@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { ArrowRight, Video, Search, Layers, Shield, Cpu } from 'lucide-react';
+import { ArrowRight, Video, Search, Layers, Cpu } from 'lucide-react';
 import ShapeGrid from '@/components/ShapeGrid';
 
 export default function Page() {

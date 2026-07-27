@@ -3,7 +3,7 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import api from '../../../lib/api';
-import { PlayCircle, Clock, CheckCircle, AlertCircle, FileVideo, UploadCloud, Video, ChevronRight, Activity, Calendar } from 'lucide-react';
+import { PlayCircle, Clock, CheckCircle, AlertCircle, FileVideo, UploadCloud, ChevronRight, Activity, Calendar } from 'lucide-react';
 import Link from 'next/link';
 
 interface VideoItem {
