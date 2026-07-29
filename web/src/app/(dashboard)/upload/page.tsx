@@ -41,11 +41,23 @@ export default function UploadPage() {
   };
 
   const handleFileSelection = (selectedFile: File) => {
-    if (!selectedFile.type.startsWith('video/')) {
+    const allowedExts = ['.mp4', '.mov', '.avi', '.mkv', '.webm', '.m4v'];
+    const lowerName = selectedFile.name.toLowerCase();
+    const hasValidExt = allowedExts.some(ext => lowerName.endsWith(ext));
+    const isVideoMime = selectedFile.type.startsWith('video/') || selectedFile.type === 'application/mp4';
+
+    if (!hasValidExt && !isVideoMime) {
       setStatus('error');
-      setErrorMsg('Please upload a valid video file (e.g. MP4, WebM, MOV).');
+      setErrorMsg('Invalid file type. Please upload a supported video file (.mp4, .mov, .avi, .mkv, .webm).');
       return;
     }
+
+    if (selectedFile.size > 500 * 1024 * 1024) { // 500 MB
+      setStatus('error');
+      setErrorMsg(`File size exceeds 500 MB limit. (Selected file: ${(selectedFile.size / (1024 * 1024)).toFixed(1)} MB)`);
+      return;
+    }
+
     setFile(selectedFile);
     setStatus('idle');
     setErrorMsg('');

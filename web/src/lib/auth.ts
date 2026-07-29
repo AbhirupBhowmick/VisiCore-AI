@@ -44,9 +44,21 @@ export function verifyToken(token: string): UserPayload | null {
 
 export function getUserFromRequest(request: Request): UserPayload | null {
   const authHeader = request.headers.get('Authorization') || request.headers.get('authorization');
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+  let token: string | null = null;
+
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    token = authHeader.substring(7).trim();
+  } else {
+    try {
+      const url = new URL(request.url);
+      token = url.searchParams.get('token');
+    } catch {
+      // Ignore URL parsing errors
+    }
+  }
+
+  if (!token) {
     return null;
   }
-  const token = authHeader.substring(7).trim();
   return verifyToken(token);
 }

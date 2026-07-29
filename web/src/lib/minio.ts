@@ -55,3 +55,16 @@ export async function deleteFromMinio(objectName: string): Promise<void> {
     console.warn(`Failed to delete object ${objectName} from MinIO:`, err);
   }
 }
+
+export async function getMinioObjectStat(objectName: string) {
+  const cleanName = objectName.replace(new RegExp(`^/?${BUCKET_NAME}/?`), '').replace(/^\//, '');
+  return minioClient.statObject(BUCKET_NAME, cleanName);
+}
+
+export async function getMinioObjectStream(objectName: string, offset?: number, length?: number) {
+  const cleanName = objectName.replace(new RegExp(`^/?${BUCKET_NAME}/?`), '').replace(/^\//, '');
+  if (typeof offset === 'number' && typeof length === 'number') {
+    return minioClient.getPartialObject(BUCKET_NAME, cleanName, offset, length);
+  }
+  return minioClient.getObject(BUCKET_NAME, cleanName);
+}

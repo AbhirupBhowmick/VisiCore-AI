@@ -15,8 +15,8 @@ VisiCore AI is a next-generation, high-performance **Enterprise AI Video Underst
 ## 🌟 Key Features
 
 *   **⚡ Real-Time Video Ingestion**: Securely upload large video files through standard multipart streams.
-*   **🧠 Gemini-Powered Telemetry**: Automatic video transcription, scene mapping, and visual summary generations powered by `gemini-2.5-flash`.
-*   **💬 Gemma 4 Copilot**: Context-aware chat assistant that lets you query specific moments, ask contextual questions, and retrieve exact clickable timestamps to seek directly in the video.
+*   **🧠 Gemini-Powered Telemetry**: Automatic video transcription, scene mapping, and visual summary generations powered by `gemini-3.6-flash`.
+*   **💬 Gemma 4 Copilot**: Context-aware chat assistant powered by `gemini-3.6-flash` that lets you query specific moments, ask contextual questions, and retrieve exact clickable timestamps to seek directly in the video.
 *   **⏱️ Interactive Visual Timelines**: Clickable semantic timestamps mapped directly to video timestamps for instant timeline navigation.
 *   **⚙️ Scalable Microservice Architecture**: Decoupled asynchronous worker queue structure to process multiple parallel ingestion pipelines.
 *   **🌌 Modern Premium UI**: High-fidelity Glassmorphic Dark UI featuring tailored micro-animations, active transforms, and stable layout designs.
@@ -35,7 +35,7 @@ graph TD
     Fullstack -->|Queue Task| MQ[[CloudAMQP RabbitMQ]]
     MQ -->|Consume Message| Worker[Python AI Worker]
     Worker -->|Read Video Object| Storage
-    Worker -->|Deep Analysis| Gemini[Google Gemini 2.5 API]
+    Worker -->|Deep Analysis| Gemini[Google Gemini 3.6 API]
     Worker -->|Save Transcripts / Summaries| DB
 ```
 

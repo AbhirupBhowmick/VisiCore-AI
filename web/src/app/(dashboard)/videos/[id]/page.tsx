@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import api from '../../../../lib/api';
+import { useAuthStore } from '../../../../store/authStore';
 import { Sparkles, FileText, Bot, Clock, PlayCircle, Send, User, Zap, Trash2 } from 'lucide-react';
 
 interface Timestamp {
@@ -136,15 +137,10 @@ export default function VideoDetailPage() {
     });
   };
 
-  const getEncodedMinioUrl = (path: string) => {
-    if (!path) return '';
-    const minioBase = (typeof window !== 'undefined' && process.env.NEXT_PUBLIC_MINIO_URL) 
-      ? process.env.NEXT_PUBLIC_MINIO_URL 
-      : 'http://localhost:9000';
-    const cleanBase = minioBase.replace(/\/$/, '');
-    const cleanPath = path.startsWith('/') ? path : `/${path}`;
-    const encodedSegments = cleanPath.split('/').map(segment => encodeURIComponent(segment)).join('/');
-    return `${cleanBase}${encodedSegments}`;
+  const getVideoStreamUrl = () => {
+    if (!id) return '';
+    const token = useAuthStore.getState().token;
+    return `/api/videos/${id}/stream${token ? `?token=${encodeURIComponent(token)}` : ''}`;
   };
 
   const handleDeleteVideo = async () => {
@@ -205,7 +201,7 @@ export default function VideoDetailPage() {
         <div className="bg-[#141414] border border-[#262626] rounded-2xl overflow-hidden shadow-lg flex-shrink-0 flex flex-col max-h-[50%]">
           <video 
             ref={videoRef}
-            src={getEncodedMinioUrl(video.minioUrl)} 
+            src={getVideoStreamUrl()} 
             controls 
             className="w-full h-full max-h-[260px] md:max-h-[300px] bg-black object-contain cursor-pointer"
             poster="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' fill='%23141414'%3E%3Crect width='100' height='100'/%3E%3C/svg%3E"

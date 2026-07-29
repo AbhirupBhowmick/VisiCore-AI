@@ -313,19 +313,27 @@ def main():
     health_thread = threading.Thread(target=run_health_check_server, args=(port,), daemon=True)
     health_thread.start()
 
-    print("Connecting to RabbitMQ…")
-    if RABBITMQ_URL:
-        params = pika.URLParameters(RABBITMQ_URL)
-    else:
-        params = pika.ConnectionParameters(host=RABBITMQ_HOST)
-    connection = pika.BlockingConnection(params)
-    channel = connection.channel()
-    channel.queue_declare(queue=QUEUE_NAME, durable=True)
-    channel.basic_qos(prefetch_count=1)
-    channel.basic_consume(queue=QUEUE_NAME, on_message_callback=process_video_task)
+    while True:
+        try:
+            print("Connecting to RabbitMQ…")
+            if RABBITMQ_URL:
+                params = pika.URLParameters(RABBITMQ_URL)
+            else:
+                params = pika.ConnectionParameters(host=RABBITMQ_HOST)
+            connection = pika.BlockingConnection(params)
+            channel = connection.channel()
+            channel.queue_declare(queue=QUEUE_NAME, durable=True)
+            channel.basic_qos(prefetch_count=1)
+            channel.basic_consume(queue=QUEUE_NAME, on_message_callback=process_video_task)
 
-    print(f"[*] Waiting for videos on '{QUEUE_NAME}'. Press CTRL+C to stop.\n")
-    channel.start_consuming()
+            print(f"[*] Waiting for videos on '{QUEUE_NAME}'. Press CTRL+C to stop.\n")
+            channel.start_consuming()
+        except KeyboardInterrupt:
+            print("\nWorker stopped by user.")
+            break
+        except Exception as err:
+            print(f"⚠️ RabbitMQ connection lost or failed to start: {err}. Retrying in 5 seconds...")
+            time.sleep(5)
 
 if __name__ == "__main__":
     main()

@@ -2,15 +2,26 @@ import { NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 import { getUserFromRequest } from '@/lib/auth';
 import { GoogleGenAI } from '@google/genai';
+import { checkRateLimit, rateLimitResponse } from '@/lib/rateLimit';
+import { logger, generateRequestId } from '@/lib/logger';
 
 export async function POST(
   request: Request,
   props: { params: Promise<{ id: string }> | { id: string } }
 ) {
+  const reqId = generateRequestId();
   try {
     const user = getUserFromRequest(request);
     if (!user) {
+      logger.warn('Unauthorized AI Copilot chat attempt', {}, reqId);
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Rate limiting: max 20 chat prompts per minute per user
+    const rateCheck = checkRateLimit(`chat_${user.id}`, 20, 60 * 1000);
+    if (!rateCheck.allowed) {
+      logger.warn('AI Copilot chat rate limit exceeded', { userId: user.id }, reqId);
+      return rateLimitResponse(rateCheck.resetSec);
     }
 
     const params = await props.params;
@@ -41,6 +52,7 @@ export async function POST(
 
     const video = videoRes.rows[0];
     if (video.user_id !== user.id) {
+      logger.warn('Forbidden AI Copilot chat access attempt', { userId: user.id, videoId: id }, reqId);
       return NextResponse.json({ message: 'Unauthorized access to video' }, { status: 403 });
     }
 
@@ -70,6 +82,8 @@ Rules for response:
 2. Whenever referencing moments in the video, include clickable timestamp tags in format [MM:SS] (e.g. [01:15], [00:42]).
 3. Be professional, concise, and accurate.`;
 
+        logger.info('Sending prompt to Gemini 3.6 Flash model', { videoId: id, promptLength: message.length }, reqId);
+
         const response = await ai.models.generateContent({
           model: 'gemini-3.6-flash',
           contents: systemPrompt,
@@ -77,10 +91,11 @@ Rules for response:
 
         const reply = response.text ? response.text.trim() : null;
         if (reply) {
+          logger.info('Gemini 3.6 Flash chat response received', { videoId: id }, reqId);
           return NextResponse.json({ reply }, { status: 200 });
         }
       } catch (geminiError) {
-        console.warn('Gemini API call failed, falling back to structured context search:', geminiError);
+        logger.warn('Gemini 3.6 Flash call failed, utilizing context search fallback', { error: String(geminiError) }, reqId);
       }
     }
 
@@ -113,7 +128,7 @@ Rules for response:
 
     return NextResponse.json({ reply: replyText }, { status: 200 });
   } catch (error: unknown) {
-    console.error('Video Copilot chat error:', error);
+    logger.error('Video Copilot chat error', error, {}, reqId);
     const message = error instanceof Error ? error.message : 'Internal server error';
     return NextResponse.json({ message }, { status: 500 });
   }
