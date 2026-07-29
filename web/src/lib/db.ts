@@ -26,8 +26,11 @@ export async function initDb() {
           email VARCHAR(255) NOT NULL UNIQUE,
           password_hash VARCHAR(255) NOT NULL,
           role VARCHAR(50) NOT NULL,
+          api_key VARCHAR(255) UNIQUE,
           created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
       );
+
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS api_key VARCHAR(255) UNIQUE;
 
       CREATE TABLE IF NOT EXISTS videos (
           id UUID PRIMARY KEY,

@@ -1,289 +1,195 @@
+"use client";
+
 import React from 'react';
+import { CreditCard, CheckCircle, Download, Sparkles, ShieldCheck, Zap, Lock, Check } from 'lucide-react';
+import { useAuthStore } from '../../../store/authStore';
 
-export default function Page() {
+// Safely extract email from JWT payload
+const getEmailFromToken = (token: string | null) => {
+  if (!token) return '';
+  try {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(
+      window.atob(base64)
+        .split('')
+        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    );
+    return JSON.parse(jsonPayload).sub || '';
+  } catch {
+    return '';
+  }
+};
+
+export default function BillingPage() {
+  const token = useAuthStore((state) => state.token);
+  const email = getEmailFromToken(token);
+
   return (
-    <>
-      
-{/* SideNavBar */}
-<aside className="fixed left-0 top-0 h-full w-[260px] bg-surface-container-lowest border-r border-outline-variant flex flex-col py-md px-sm z-50">
-<div className="mb-xl px-xs">
-<div className="flex items-center gap-xs">
-<div className="w-8 h-8 bg-primary rounded flex items-center justify-center">
-<span className="material-symbols-outlined text-on-primary text-[20px]" >analytics</span>
-</div>
-<div>
-<h1 className="font-headline-md text-headline-md font-bold text-on-surface">VisiCore AI</h1>
-<p className="text-[10px] uppercase tracking-widest text-on-surface-variant opacity-60">AI Video Analysis</p>
-</div>
-</div>
-</div>
-<nav className="flex-1 space-y-base">
-<a className="flex items-center gap-sm px-sm py-xs rounded text-on-surface-variant hover:bg-surface-container-low transition-colors duration-200 group" href="#">
-<span className="material-symbols-outlined group-hover:text-primary">dashboard</span>
-<span className="font-label-md text-label-md">Dashboard</span>
-</a>
-<a className="flex items-center gap-sm px-sm py-xs rounded text-on-surface-variant hover:bg-surface-container-low transition-colors duration-200 group" href="#">
-<span className="material-symbols-outlined group-hover:text-primary">video_library</span>
-<span className="font-label-md text-label-md">Library</span>
-</a>
-<a className="flex items-center gap-sm px-sm py-xs rounded text-on-surface-variant hover:bg-surface-container-low transition-colors duration-200 group" href="#">
-<span className="material-symbols-outlined group-hover:text-primary">insights</span>
-<span className="font-label-md text-label-md">Insights</span>
-</a>
-<a className="flex items-center gap-sm px-sm py-xs rounded text-primary bg-secondary-container/10 border-l-2 border-primary transition-colors duration-200" href="#">
-<span className="material-symbols-outlined" >payments</span>
-<span className="font-label-md text-label-md">Billing</span>
-</a>
-</nav>
-<div className="mt-auto space-y-base border-t border-outline-variant pt-md">
-<a className="flex items-center gap-sm px-sm py-xs rounded text-on-surface-variant hover:bg-surface-container-low transition-colors duration-200" href="#">
-<span className="material-symbols-outlined">settings</span>
-<span className="font-label-md text-label-md">Settings</span>
-</a>
-<a className="flex items-center gap-sm px-sm py-xs rounded text-on-surface-variant hover:bg-surface-container-low transition-colors duration-200" href="#">
-<span className="material-symbols-outlined">help</span>
-<span className="font-label-md text-label-md">Support</span>
-</a>
-</div>
-</aside>
-{/* TopAppBar */}
-<header className="fixed top-0 right-0 w-[calc(100%-260px)] h-xl bg-surface-container-lowest border-b border-outline-variant flex justify-between items-center px-lg z-40">
-<div className="flex items-center flex-1">
-<div className="relative w-full max-w-md">
-<span className="material-symbols-outlined absolute left-sm top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">search</span>
-<input className="w-full bg-surface-container-low border border-outline-variant rounded-full py-base pl-xl pr-md text-body-sm focus:ring-1 focus:ring-primary outline-none transition-all" placeholder="Search invoices or plans..." type="text"/>
-</div>
-</div>
-<div className="flex items-center gap-md">
-<button className="bg-primary text-on-primary px-md py-base rounded-full font-label-md flex items-center gap-xs hover-glow transition-all active:scale-95">
-<span className="material-symbols-outlined text-[18px]">upload</span>
-                Upload Video
+    <div className="pb-12 font-sans space-y-8">
+      {/* Top Banner Header */}
+      <div>
+        <div className="flex items-center gap-2 text-xs font-bold text-blue-500 uppercase tracking-widest mb-1.5">
+          <CreditCard className="w-3.5 h-3.5" /> Billing & Infrastructure Subscription
+        </div>
+        <h1 className="text-3xl font-bold text-white tracking-tight">Subscription Plan</h1>
+        <p className="text-gray-400 text-sm mt-1">Manage processing quotas, compute tiers, and billing receipts for {email || 'your account'}.</p>
+      </div>
+
+      {/* Sleek Active Plan Banner */}
+      <div className="bg-[#0A0A0A] border border-[#262626] rounded-2xl p-6 relative overflow-hidden group hover:border-gray-800 transition-colors">
+        <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-blue-500/10 to-transparent pointer-events-none"></div>
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
+              <ShieldCheck className="w-6 h-6" />
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-white">Current Plan: Professional Developer</h2>
+              <p className="text-xs text-gray-400 mt-1">Active subscription • High-priority Gemini 2.5 GPU compute tier</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="bg-green-500/10 text-green-400 border border-green-500/20 px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1.5">
+              <CheckCircle className="w-3.5 h-3.5" /> Active Tier
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Pricing Tier Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Starter Plan */}
+        <div className="bg-[#0A0A0A] border border-[#262626] rounded-2xl p-6 flex flex-col hover:border-gray-700 transition-all">
+          <div className="mb-6">
+            <h3 className="text-base font-bold text-gray-300">Starter</h3>
+            <p className="text-xs text-gray-500 mt-1">For basic video experimentation</p>
+            <div className="mt-4 flex items-baseline">
+              <span className="text-3xl font-extrabold text-white">$0</span>
+              <span className="text-gray-500 ml-1 text-xs">/ forever</span>
+            </div>
+          </div>
+
+          <ul className="space-y-3 text-xs text-gray-400 flex-grow mb-6">
+            <li className="flex items-center gap-2">
+              <Check className="w-4 h-4 text-blue-400" /> 5 video uploads / mo
+            </li>
+            <li className="flex items-center gap-2">
+              <Check className="w-4 h-4 text-blue-400" /> Verbatim Speech Transcripts
+            </li>
+            <li className="flex items-center gap-2">
+              <Check className="w-4 h-4 text-blue-400" /> Basic Timeline Navigation
+            </li>
+          </ul>
+
+          <button disabled className="w-full py-2.5 rounded-xl border border-[#262626] text-gray-500 font-medium text-xs text-center cursor-not-allowed">
+            Free Tier Included
+          </button>
+        </div>
+
+        {/* Pro Plan */}
+        <div className="bg-[#0A0A0A] border-2 border-blue-600 rounded-2xl p-6 flex flex-col relative shadow-[0_0_30px_rgba(37,99,235,0.15)]">
+          <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-blue-600 text-white px-3 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider">
+            Current Tier
+          </div>
+
+          <div className="mb-6">
+            <h3 className="text-base font-bold text-white flex items-center gap-1.5">
+              <Sparkles className="w-4 h-4 text-blue-400" /> Professional
+            </h3>
+            <p className="text-xs text-blue-400 mt-1">Full access to telemetry pipeline</p>
+            <div className="mt-4 flex items-baseline">
+              <span className="text-3xl font-extrabold text-white">$49</span>
+              <span className="text-gray-400 ml-1 text-xs">/ month</span>
+            </div>
+          </div>
+
+          <ul className="space-y-3 text-xs text-gray-300 flex-grow mb-6">
+            <li className="flex items-center gap-2">
+              <Check className="w-4 h-4 text-blue-400" /> Unlimited Video Uploads
+            </li>
+            <li className="flex items-center gap-2">
+              <Check className="w-4 h-4 text-blue-400" /> Gemma 4 Copilot Interactive Chat
+            </li>
+            <li className="flex items-center gap-2">
+              <Check className="w-4 h-4 text-blue-400" /> Interactive Timestamps & Summaries
+            </li>
+            <li className="flex items-center gap-2">
+              <Check className="w-4 h-4 text-blue-400" /> MinIO S3 Object Storage Included
+            </li>
+          </ul>
+
+          <button className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-xl transition-all shadow-md">
+            Manage Subscription
+          </button>
+        </div>
+
+        {/* Enterprise Plan */}
+        <div className="bg-[#0A0A0A] border border-[#262626] rounded-2xl p-6 flex flex-col hover:border-gray-700 transition-all">
+          <div className="mb-6">
+            <h3 className="text-base font-bold text-gray-300">Enterprise</h3>
+            <p className="text-xs text-gray-500 mt-1">Dedicated GPU cluster & SLAs</p>
+            <div className="mt-4 flex items-baseline">
+              <span className="text-3xl font-extrabold text-white">Custom</span>
+            </div>
+          </div>
+
+          <ul className="space-y-3 text-xs text-gray-400 flex-grow mb-6">
+            <li className="flex items-center gap-2">
+              <Check className="w-4 h-4 text-blue-400" /> Dedicated Worker Queue Threads
+            </li>
+            <li className="flex items-center gap-2">
+              <Check className="w-4 h-4 text-blue-400" /> Custom Vocabulary & Fine-tuning
+            </li>
+            <li className="flex items-center gap-2">
+              <Check className="w-4 h-4 text-blue-400" /> 24/7 Priority SLA Support
+            </li>
+          </ul>
+
+          <a href="mailto:support@visicore.ai" className="w-full py-2.5 rounded-xl border border-[#262626] text-white hover:bg-[#141414] transition-all font-medium text-xs text-center block">
+            Contact Sales
+          </a>
+        </div>
+      </div>
+
+      {/* Payment Information & Invoices */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Payment Method */}
+        <div className="bg-[#0A0A0A] border border-[#262626] rounded-2xl p-6">
+          <h3 className="text-base font-bold text-white mb-4 flex items-center gap-2">
+            <CreditCard className="w-4 h-4 text-blue-500" /> Payment Security
+          </h3>
+          <div className="bg-[#141414] border border-[#262626] rounded-xl p-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-7 bg-black border border-gray-800 rounded flex items-center justify-center font-bold italic text-[10px] text-blue-400">
+                VISA
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-white">•••• •••• •••• 4242</p>
+                <p className="text-[10px] text-gray-500">Encrypted Bearer Authentication</p>
+              </div>
+            </div>
+            <Lock className="w-4 h-4 text-gray-500" />
+          </div>
+        </div>
+
+        {/* Invoice Download */}
+        <div className="bg-[#0A0A0A] border border-[#262626] rounded-2xl p-6">
+          <h3 className="text-base font-bold text-white mb-4 flex items-center gap-2">
+            <Download className="w-4 h-4 text-blue-500" /> Recent Receipts
+          </h3>
+          <div className="bg-[#141414] border border-[#262626] rounded-xl p-4 flex items-center justify-between">
+            <div>
+              <p className="text-xs font-semibold text-white">Monthly Pro Subscription</p>
+              <p className="text-[10px] text-gray-500">$49.00 • Active Account</p>
+            </div>
+            <button className="p-2 rounded-lg bg-black hover:bg-[#1f1f1f] text-blue-400 border border-[#262626] transition-all">
+              <Download className="w-3.5 h-3.5" />
             </button>
-<div className="flex items-center gap-sm border-l border-outline-variant pl-md">
-<button className="text-on-surface-variant hover:text-primary transition-colors">
-<span className="material-symbols-outlined">notifications</span>
-</button>
-<div className="w-8 h-8 rounded-full overflow-hidden border border-outline-variant">
-<img className="w-full h-full object-cover" data-alt="Close-up professional portrait of a tech executive with a modern, minimalist background. The lighting is dramatic and low-key, emphasizing a sophisticated and authoritative presence. The overall aesthetic is ultra-dark and premium, matching the VisiCore AI brand identity with deep blacks and subtle highlights." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAoFI71ZozaxkwkYjhWQsiY5tfAUi0nTaydZ64-iGNY9HFEmhf72XX3OlM8zQhfVeVleMysHhANXfsXHC-q-cx411UyuxPz0XlQOlX0SYSU3ftrqXhDJ8e4MVnu8-lScUwK4QkscLiTqrexCD0NonOfs9K38GUwVuY8dEQ16k5qL1zcKk9J8XrLN3yhXNAc1swEmtVMSXrGylgoPnxQ5jiff1AuC29ZfZ3tWA9qxJcmdu1MXhHOi26QF3WUDkb39t6_lqwAIVBl5Dk"/>
-</div>
-</div>
-</div>
-</header>
-{/* Main Content */}
-<main className="ml-[260px] pt-xl min-h-screen px-lg pb-xl">
-<div className="max-w-7xl mx-auto space-y-lg mt-md">
-{/* Sleek Banner */}
-<section className="ultra-dark-card rounded-xl p-lg relative overflow-hidden group">
-<div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-primary/5 to-transparent pointer-events-none"></div>
-<div className="flex flex-col md:flex-row md:items-center justify-between gap-md relative z-10">
-<div className="flex items-center gap-md">
-<div className="w-14 h-14 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center">
-<span className="material-symbols-outlined text-primary text-[32px]">verified</span>
-</div>
-<div>
-<h2 className="font-headline-lg text-headline-lg text-on-surface">Current Plan: Pro (Annual)</h2>
-<p className="text-on-surface-variant font-body-md">Your next renewal is on <span className="text-on-surface font-semibold">November 12, 2024</span>.</p>
-</div>
-</div>
-<div className="flex flex-col items-end">
-<span className="bg-primary/20 text-primary px-md py-xs rounded-full font-label-md border border-primary/30 mb-xs">Active</span>
-<p className="text-on-surface-variant text-body-sm">Status: Excellent</p>
-</div>
-</div>
-</section>
-{/* Pricing Grid */}
-<section className="grid grid-cols-1 md:grid-cols-3 gap-md">
-{/* Free Plan */}
-<div className="ultra-dark-card rounded-xl p-lg flex flex-col">
-<div className="mb-lg">
-<p className="font-label-md text-on-surface-variant uppercase tracking-widest mb-xs">Individual</p>
-<h3 className="font-headline-md text-headline-md text-on-surface mb-md">Free</h3>
-<div className="flex items-baseline gap-xs">
-<span className="font-display-lg text-display-lg text-on-surface">$0</span>
-<span className="text-on-surface-variant font-body-md">/month</span>
-</div>
-<p className="text-on-surface-variant text-body-sm mt-sm">Basic features for personal video analysis and experiments.</p>
-</div>
-<div className="space-y-sm flex-1 mb-lg">
-<div className="flex items-center gap-sm">
-<span className="material-symbols-outlined text-on-surface-variant text-[20px]">check_circle</span>
-<span className="text-body-sm text-on-surface-variant">5 AI analyses per month</span>
-</div>
-<div className="flex items-center gap-sm">
-<span className="material-symbols-outlined text-on-surface-variant text-[20px]">check_circle</span>
-<span className="text-body-sm text-on-surface-variant">Standard processing speed</span>
-</div>
-<div className="flex items-center gap-sm">
-<span className="material-symbols-outlined text-on-surface-variant text-[20px]">check_circle</span>
-<span className="text-body-sm text-on-surface-variant">720p export quality</span>
-</div>
-<div className="flex items-center gap-sm opacity-30">
-<span className="material-symbols-outlined text-[20px]">cancel</span>
-<span className="text-body-sm">Custom API integration</span>
-</div>
-</div>
-<button className="w-full border border-outline-variant hover:bg-surface-container-low text-on-surface py-md rounded-lg font-label-md transition-all active:scale-95">
-                        Current Plan
-                    </button>
-</div>
-{/* Pro Plan */}
-<div className="ultra-dark-card rounded-xl p-lg flex flex-col glow-primary relative">
-<div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-on-primary text-[10px] font-bold uppercase tracking-widest px-md py-1 rounded-full shadow-lg">
-                        Most Popular
-                    </div>
-<div className="mb-lg">
-<p className="font-label-md text-primary uppercase tracking-widest mb-xs">Professional</p>
-<h3 className="font-headline-md text-headline-md text-on-surface mb-md">Pro</h3>
-<div className="flex items-baseline gap-xs">
-<span className="font-display-lg text-display-lg text-on-surface">$49</span>
-<span className="text-on-surface-variant font-body-md">/month</span>
-</div>
-<p className="text-on-surface-variant text-body-sm mt-sm">Comprehensive tools for creators and small studios.</p>
-</div>
-<div className="space-y-sm flex-1 mb-lg">
-<div className="flex items-center gap-sm">
-<span className="material-symbols-outlined text-primary text-[20px]">check_circle</span>
-<span className="text-body-sm text-on-surface">Unlimited AI analyses</span>
-</div>
-<div className="flex items-center gap-sm">
-<span className="material-symbols-outlined text-primary text-[20px]">check_circle</span>
-<span className="text-body-sm text-on-surface">Priority GPU processing</span>
-</div>
-<div className="flex items-center gap-sm">
-<span className="material-symbols-outlined text-primary text-[20px]">check_circle</span>
-<span className="text-body-sm text-on-surface">4K Ultra HD exports</span>
-</div>
-<div className="flex items-center gap-sm">
-<span className="material-symbols-outlined text-primary text-[20px]">check_circle</span>
-<span className="text-body-sm text-on-surface">Advanced motion tracking</span>
-</div>
-<div className="flex items-center gap-sm">
-<span className="material-symbols-outlined text-primary text-[20px]">check_circle</span>
-<span className="text-body-sm text-on-surface">Multi-user workspace</span>
-</div>
-</div>
-<button className="w-full bg-primary text-on-primary py-md rounded-lg font-label-md hover-glow transition-all active:scale-95">
-                        Manage Subscription
-                    </button>
-</div>
-{/* Enterprise Plan */}
-<div className="ultra-dark-card rounded-xl p-lg flex flex-col">
-<div className="mb-lg">
-<p className="font-label-md text-on-surface-variant uppercase tracking-widest mb-xs">Scalable</p>
-<h3 className="font-headline-md text-headline-md text-on-surface mb-md">Enterprise</h3>
-<div className="flex items-baseline gap-xs">
-<span className="font-display-lg text-display-lg text-on-surface">Custom</span>
-</div>
-<p className="text-on-surface-variant text-body-sm mt-sm">Tailored solutions for high-volume enterprise operations.</p>
-</div>
-<div className="space-y-sm flex-1 mb-lg">
-<div className="flex items-center gap-sm">
-<span className="material-symbols-outlined text-on-surface-variant text-[20px]">check_circle</span>
-<span className="text-body-sm text-on-surface-variant">Dedicated AI nodes</span>
-</div>
-<div className="flex items-center gap-sm">
-<span className="material-symbols-outlined text-on-surface-variant text-[20px]">check_circle</span>
-<span className="text-body-sm text-on-surface-variant">Custom API endpoints</span>
-</div>
-<div className="flex items-center gap-sm">
-<span className="material-symbols-outlined text-on-surface-variant text-[20px]">check_circle</span>
-<span className="text-body-sm text-on-surface-variant">White-glove 24/7 support</span>
-</div>
-<div className="flex items-center gap-sm">
-<span className="material-symbols-outlined text-on-surface-variant text-[20px]">check_circle</span>
-<span className="text-body-sm text-on-surface-variant">SLA guarantees</span>
-</div>
-</div>
-<button className="w-full border border-outline-variant hover:bg-surface-container-low text-on-surface py-md rounded-lg font-label-md transition-all active:scale-95">
-                        Contact Sales
-                    </button>
-</div>
-</section>
-{/* Footer: Payment & Invoices */}
-<section className="grid grid-cols-1 lg:grid-cols-2 gap-md">
-{/* Payment Method */}
-<div className="ultra-dark-card rounded-xl p-lg">
-<div className="flex justify-between items-center mb-lg">
-<h3 className="font-headline-md text-headline-md text-on-surface">Payment Method</h3>
-<button className="text-primary font-label-md hover:underline">Update</button>
-</div>
-<div className="bg-surface-container-low border border-outline-variant rounded-xl p-md flex items-center gap-md">
-<div className="w-12 h-8 bg-[#1a1a1a] border border-[#262626] rounded flex items-center justify-center">
-<span className="text-[10px] font-bold text-on-surface italic">VISA</span>
-</div>
-<div className="flex-1">
-<p className="text-on-surface font-body-md">â¢â¢â¢â¢ â¢â¢â¢â¢ â¢â¢â¢â¢ 4242</p>
-<p className="text-on-surface-variant text-body-sm">Expires 08/26</p>
-</div>
-<div className="text-right">
-<span className="material-symbols-outlined text-on-surface-variant">lock</span>
-</div>
-</div>
-<div className="mt-lg flex items-center gap-sm text-on-surface-variant text-body-sm">
-<span className="material-symbols-outlined text-[16px]">info</span>
-<span>Your billing information is securely encrypted.</span>
-</div>
-</div>
-{/* Invoice History */}
-<div className="ultra-dark-card rounded-xl p-lg overflow-hidden">
-<div className="flex justify-between items-center mb-lg">
-<h3 className="font-headline-md text-headline-md text-on-surface">Invoice History</h3>
-<button className="text-on-surface-variant font-label-md hover:text-on-surface transition-colors">View All</button>
-</div>
-<div className="overflow-x-auto">
-<table className="w-full text-left">
-<thead>
-<tr className="border-b border-outline-variant">
-<th className="py-sm font-label-md text-on-surface-variant">Date</th>
-<th className="py-sm font-label-md text-on-surface-variant">Amount</th>
-<th className="py-sm font-label-md text-on-surface-variant">Status</th>
-<th className="py-sm font-label-md text-on-surface-variant text-right">Invoice</th>
-</tr>
-</thead>
-<tbody className="divide-y divide-outline-variant/30">
-<tr>
-<td className="py-sm text-body-sm text-on-surface">Oct 12, 2023</td>
-<td className="py-sm text-body-sm text-on-surface">$499.00</td>
-<td className="py-sm">
-<span className="bg-green-500/10 text-green-500 text-[10px] px-sm py-0.5 rounded-full border border-green-500/20">Paid</span>
-</td>
-<td className="py-sm text-right">
-<button className="text-on-surface-variant hover:text-primary"><span className="material-symbols-outlined text-[20px]">download</span></button>
-</td>
-</tr>
-<tr>
-<td className="py-sm text-body-sm text-on-surface">Sep 12, 2023</td>
-<td className="py-sm text-body-sm text-on-surface">$499.00</td>
-<td className="py-sm">
-<span className="bg-green-500/10 text-green-500 text-[10px] px-sm py-0.5 rounded-full border border-green-500/20">Paid</span>
-</td>
-<td className="py-sm text-right">
-<button className="text-on-surface-variant hover:text-primary"><span className="material-symbols-outlined text-[20px]">download</span></button>
-</td>
-</tr>
-<tr>
-<td className="py-sm text-body-sm text-on-surface">Aug 12, 2023</td>
-<td className="py-sm text-body-sm text-on-surface">$499.00</td>
-<td className="py-sm">
-<span className="bg-green-500/10 text-green-500 text-[10px] px-sm py-0.5 rounded-full border border-green-500/20">Paid</span>
-</td>
-<td className="py-sm text-right">
-<button className="text-on-surface-variant hover:text-primary"><span className="material-symbols-outlined text-[20px]">download</span></button>
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-</section>
-{/* Bottom Actions */}
-<footer className="pt-lg pb-md flex justify-center border-t border-outline-variant/30">
-<a className="text-on-surface-variant font-label-md hover:text-error transition-colors text-sm opacity-60 hover:opacity-100" href="#">Cancel Subscription</a>
-</footer>
-</div>
-</main>
-
-
-    </>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

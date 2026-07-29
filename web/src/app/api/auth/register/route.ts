@@ -18,12 +18,13 @@ export async function POST(request: Request) {
     }
 
     const id = uuidv4();
+    const apiKey = `vc_live_${uuidv4().replace(/-/g, '')}`;
     const userRole = role || 'USER';
     const passwordHash = await hashPassword(password);
 
     await query(
-      'INSERT INTO users (id, email, password_hash, role, created_at) VALUES ($1, $2, $3, $4, NOW())',
-      [id, email, passwordHash, userRole]
+      'INSERT INTO users (id, email, password_hash, role, api_key, created_at) VALUES ($1, $2, $3, $4, $5, NOW())',
+      [id, email, passwordHash, userRole, apiKey]
     );
 
     const token = generateToken({ id, email, role: userRole });

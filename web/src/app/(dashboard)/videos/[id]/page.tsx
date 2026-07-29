@@ -138,8 +138,13 @@ export default function VideoDetailPage() {
 
   const getEncodedMinioUrl = (path: string) => {
     if (!path) return '';
-    // Encode space characters, '#' hashes, and special characters in each url segment
-    return path.split('/').map(segment => encodeURIComponent(segment)).join('/');
+    const minioBase = (typeof window !== 'undefined' && process.env.NEXT_PUBLIC_MINIO_URL) 
+      ? process.env.NEXT_PUBLIC_MINIO_URL 
+      : 'http://localhost:9000';
+    const cleanBase = minioBase.replace(/\/$/, '');
+    const cleanPath = path.startsWith('/') ? path : `/${path}`;
+    const encodedSegments = cleanPath.split('/').map(segment => encodeURIComponent(segment)).join('/');
+    return `${cleanBase}${encodedSegments}`;
   };
 
   const handleDeleteVideo = async () => {
@@ -155,7 +160,7 @@ export default function VideoDetailPage() {
     }
   };
 
-  const handleSendMessage = (e: React.FormEvent) => {
+  const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputMessage.trim() || !video) return;
 
@@ -164,95 +169,31 @@ export default function VideoDetailPage() {
     setInputMessage('');
     setIsTyping(true);
 
-    setTimeout(() => {
-      let aiResponseText = '';
+    try {
+      const response = await api.post(`/api/videos/${id}/chat`, { message: userText });
+      const aiReply = response.data.reply;
+
+      // Extract first timestamp match if present in reply text
+      const timeMatch = aiReply.match(/\[(\d+):(\d+)\]/);
       let targetTime: number | undefined = undefined;
-      const lowerText = userText.toLowerCase();
-
-      // ── FULL TRANSCRIPT CONTENT for search context ─────────────────────
-      const fullTranscript = video.transcript?.content || '';
-      const allWords = lowerText.split(/\s+/).filter(w => w.length > 2);
-
-      // ── Score each timestamp segment by relevance ──────────────────────
-      const scored = parsedTimestamps.map(ts => {
-        const tsLower = ts.text.toLowerCase();
-        let score = 0;
-        // exact phrase match
-        if (tsLower.includes(lowerText)) score += 10;
-        // individual word matches
-        allWords.forEach(word => { if (tsLower.includes(word)) score += 2; });
-        return { ts, score };
-      }).filter(s => s.score > 0).sort((a, b) => b.score - a.score);
-
-      // ── Also search full transcript for context sentences ──────────────
-      const transcriptSentences = fullTranscript
-        .split(/(?<=[.!?])\s+/)
-        .filter(s => s.length > 20);
-      const matchingSentences = transcriptSentences.filter(sentence => {
-        const sl = sentence.toLowerCase();
-        if (sl.includes(lowerText)) return true;
-        return allWords.filter(w => sl.includes(w)).length >= Math.max(1, Math.floor(allWords.length * 0.4));
-      }).slice(0, 4);
-
-      // ── INTENT: Summary ────────────────────────────────────────────────
-      if (/\b(summary|summarize|summarise|tldr|tl;dr|overview|what is this|what is the video|what is it about|about|main point|key point|topics|discuss)\b/.test(lowerText)) {
-        aiResponseText =
-          `Here is a complete breakdown of this video:\n\n` +
-          `**TL;DR:**\n${video.summary?.shortSummary || 'Video summary not yet available.'}\n\n` +
-          `**In-Depth Analysis:**\n${video.summary?.detailedSummary || 'Detailed summary not yet available.'}\n\n` +
-          `**Full Video Timeline:**\n` +
-          (parsedTimestamps.length > 0
-            ? parsedTimestamps.map(ts => `• [${formatTime(ts.start)}] ${ts.text}`).join('\n')
-            : '• No timeline data available yet.');
-
-      // ── INTENT: Full transcript ────────────────────────────────────────
-      } else if (/\b(transcript|full text|everything said|all words|verbatim)\b/.test(lowerText)) {
-        aiResponseText =
-          `**Full Video Transcript:**\n\n` +
-          (fullTranscript || 'Transcript not yet available for this video.');
-
-      // ── INTENT: Timestamp matches found ───────────────────────────────
-      } else if (scored.length > 0) {
-        const topMatches = scored.slice(0, 5);
-        targetTime = topMatches[0].ts.start;
-        aiResponseText =
-          `I found **${topMatches.length}** relevant moment${topMatches.length > 1 ? 's' : ''} in the video for "${userText}":\n\n` +
-          topMatches.map((s, i) =>
-            `${i + 1}. [${formatTime(s.ts.start)}] — "${s.ts.text}"`
-          ).join('\n\n');
-
-        if (matchingSentences.length > 0) {
-          aiResponseText += `\n\n**Additional context from transcript:**\n"${matchingSentences.join(' ')}"`;
-        }
-        aiResponseText += `\n\nClick any timestamp above to jump directly to that moment!`;
-
-      // ── INTENT: Transcript text matches (no timestamps) ───────────────
-      } else if (matchingSentences.length > 0) {
-        aiResponseText =
-          `I found relevant content in the transcript for "${userText}":\n\n` +
-          `"${matchingSentences.join(' ')}"\n\n` +
-          `The full video transcript and timeline are available in the Transcript tab above.`;
-
-      // ── FALLBACK: Show what we know ────────────────────────────────────
-      } else {
-        aiResponseText =
-          `I couldn't find an exact match for "${userText}" in this video's transcript.\n\n` +
-          `**What I know about this video:**\n` +
-          `${video.summary?.shortSummary || video.title}\n\n` +
-          `**Full Timeline:**\n` +
-          (parsedTimestamps.length > 0
-            ? parsedTimestamps.map(ts => `• [${formatTime(ts.start)}] ${ts.text}`).join('\n')
-            : '• Transcript not yet available.') +
-          `\n\nTry asking about topics, people, or phrases you expect to hear in this video.`;
+      if (timeMatch) {
+        targetTime = parseInt(timeMatch[1], 10) * 60 + parseInt(timeMatch[2], 10);
       }
 
       setMessages(prev => [...prev, {
         sender: 'ai',
-        text: aiResponseText,
+        text: aiReply,
         timestamp: targetTime
       }]);
+    } catch (err) {
+      console.error("Copilot chat error:", err);
+      setMessages(prev => [...prev, {
+        sender: 'ai',
+        text: "I encountered an issue processing your query. Please check network connectivity or try again."
+      }]);
+    } finally {
       setIsTyping(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -264,7 +205,7 @@ export default function VideoDetailPage() {
         <div className="bg-[#141414] border border-[#262626] rounded-2xl overflow-hidden shadow-lg flex-shrink-0 flex flex-col max-h-[50%]">
           <video 
             ref={videoRef}
-            src={`http://localhost:9000${getEncodedMinioUrl(video.minioUrl)}`} 
+            src={getEncodedMinioUrl(video.minioUrl)} 
             controls 
             className="w-full h-full max-h-[260px] md:max-h-[300px] bg-black object-contain cursor-pointer"
             poster="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' fill='%23141414'%3E%3Crect width='100' height='100'/%3E%3C/svg%3E"

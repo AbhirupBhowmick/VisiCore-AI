@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { 
   User, Lock, Key, Cpu, Bell, Webhook, 
   Eye, EyeOff, Copy, Check, Sparkles, ShieldAlert, CheckCircle 
@@ -28,7 +29,20 @@ const getEmailFromToken = (token: string | null) => {
 
 export default function SettingsPage() {
   const token = useAuthStore((state) => state.token);
-  const email = getEmailFromToken(token);
+  const emailFromToken = getEmailFromToken(token);
+
+  const { data: userProfile } = useQuery({
+    queryKey: ['user-profile'],
+    queryFn: async () => {
+      const response = await api.get('/api/auth/me');
+      return response.data;
+    },
+    enabled: !!token,
+  });
+
+  const email = userProfile?.email || emailFromToken;
+  const userRole = userProfile?.role || 'USER';
+  const apiKey = userProfile?.apiKey || 'vc_live_83b27b9921f0084c892019488a0b73c2';
 
   // Profile preferences (Saved locally in localStorage for persistent client state)
   const [neuralMode, setNeuralMode] = useState(() => {
@@ -55,7 +69,6 @@ export default function SettingsPage() {
   // API key states
   const [showApiKey, setShowApiKey] = useState(false);
   const [copied, setCopied] = useState(false);
-  const apiKey = 'vc_live_83b27b9921f0084c892019488a0b73c2';
 
   // Platform preferences loading/saving local states
   const [saveStatus, setSaveStatus] = useState('');
@@ -140,7 +153,7 @@ export default function SettingsPage() {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#1f1f1f] pb-4">
                 <span className="text-sm text-gray-500 font-medium">Account Access Role</span>
                 <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-500/10 text-blue-500 border border-blue-500/20 mt-1 sm:mt-0">
-                  DEVELOPER / USER
+                  {userRole.toUpperCase()}
                 </span>
               </div>
 

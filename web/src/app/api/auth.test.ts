@@ -3,6 +3,7 @@ import { QueryResult } from 'pg';
 import { POST as registerHandler } from './auth/register/route';
 import { POST as loginHandler } from './auth/login/route';
 import { POST as changePasswordHandler } from './auth/change-password/route';
+import { GET as meHandler } from './auth/me/route';
 import * as db from '@/lib/db';
 import * as auth from '@/lib/auth';
 
@@ -21,8 +22,35 @@ function mockQueryResult(rows: Record<string, unknown>[] = []): QueryResult {
 }
 
 describe('Auth Route Handlers', () => {
+  const testUser = { id: 'user-123', email: 'test@example.com', role: 'USER' };
+  const validToken = auth.generateToken(testUser);
+
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  describe('GET /api/auth/me', () => {
+    it('returns 401 when request is unauthenticated', async () => {
+      const req = new Request('http://localhost:3000/api/auth/me', { method: 'GET' });
+      const res = await meHandler(req);
+      expect(res.status).toBe(401);
+    });
+
+    it('returns user profile when authenticated', async () => {
+      vi.mocked(db.query).mockResolvedValueOnce(
+        mockQueryResult([{ id: 'user-123', email: 'test@example.com', role: 'USER', api_key: 'vc_live_123', created_at: new Date() }])
+      );
+
+      const req = new Request('http://localhost:3000/api/auth/me', {
+        method: 'GET',
+        headers: { Authorization: `Bearer ${validToken}` },
+      });
+      const res = await meHandler(req);
+      expect(res.status).toBe(200);
+      const json = await res.json();
+      expect(json.email).toBe('test@example.com');
+      expect(json.apiKey).toBe('vc_live_123');
+    });
   });
 
   describe('POST /api/auth/register', () => {

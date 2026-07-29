@@ -1,249 +1,170 @@
+"use client";
+
 import React from 'react';
+import { useQuery } from '@tanstack/react-query';
+import api from '../../../lib/api';
+import { 
+  TrendingUp, Sparkles, Clock, CheckCircle, Calendar, Download, Activity, Video, ShieldCheck 
+} from 'lucide-react';
 
-export default function Page() {
+interface VideoItem {
+  id: string;
+  title: string;
+  status: 'UPLOAD_PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED';
+  duration: number;
+  createdAt: string;
+}
+
+export default function AnalyticsPage() {
+  const { data: videos, isLoading } = useQuery<VideoItem[]>({
+    queryKey: ['videos'],
+    queryFn: async () => {
+      const response = await api.get('/api/videos');
+      return response.data;
+    },
+  });
+
+  const videoList = videos || [];
+  const totalCount = videoList.length;
+  const completedCount = videoList.filter(v => v.status === 'COMPLETED').length;
+  const processingCount = videoList.filter(v => v.status === 'PROCESSING' || v.status === 'UPLOAD_PENDING').length;
+  const accuracyRate = totalCount > 0 ? ((completedCount / totalCount) * 100).toFixed(1) : '100.0';
+
   return (
-    <>
-      
-{/* SideNavBar */}
-<aside className="fixed left-0 top-0 h-full w-[260px] bg-surface-container-lowest border-r border-outline-variant flex flex-col p-sm z-50">
-<div className="mb-xl px-xs">
-<h1 className="font-headline-md text-headline-md font-bold text-primary flex items-center gap-xs">
-<span className="material-symbols-outlined" >dataset</span>
-                VisiCore AI
-            </h1>
-<p className="text-on-surface-variant font-label-md text-[12px] tracking-widest mt-base uppercase">Video Intelligence</p>
-</div>
-<nav className="flex-1 space-y-base">
-<a className="flex items-center gap-sm p-sm rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors duration-200" href="#">
-<span className="material-symbols-outlined">dashboard</span>
-<span className="font-label-md">Dashboard</span>
-</a>
-<a className="flex items-center gap-sm p-sm rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors duration-200" href="#">
-<span className="material-symbols-outlined">video_library</span>
-<span className="font-label-md">Library</span>
-</a>
-<a className="flex items-center gap-sm p-sm rounded-lg sidebar-active transition-colors duration-200" href="#">
-<span className="material-symbols-outlined" >insights</span>
-<span className="font-label-md">Insights</span>
-</a>
-<a className="flex items-center gap-sm p-sm rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors duration-200" href="#">
-<span className="material-symbols-outlined">payments</span>
-<span className="font-label-md">Billing</span>
-</a>
-</nav>
-<div className="mt-auto p-sm">
-<button className="w-full py-sm bg-primary text-on-primary font-label-md rounded-lg electric-glow transition-all hover:opacity-90 active:scale-95">
-                Upgrade Plan
-            </button>
-</div>
-</aside>
-{/* TopAppBar */}
-<header className="fixed top-0 right-0 w-[calc(100%-260px)] h-16 bg-surface-container-lowest border-b border-outline-variant flex justify-between items-center px-md z-40">
-<div className="flex items-center gap-md flex-1">
-<div className="relative w-full max-w-md">
-<span className="material-symbols-outlined absolute left-sm top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">search</span>
-<input className="w-full bg-surface-container-low border border-outline-variant rounded-lg pl-xl pr-sm py-xs text-body-sm neon-border-focus transition-all" placeholder="Search insights..." type="text"/>
-</div>
-</div>
-<div className="flex items-center gap-md">
-<button className="text-on-surface-variant hover:text-primary transition-all">
-<span className="material-symbols-outlined">notifications</span>
-</button>
-<button className="text-on-surface-variant hover:text-primary transition-all">
-<span className="material-symbols-outlined">settings</span>
-</button>
-<div className="h-8 w-8 rounded-full overflow-hidden border border-outline-variant">
-<img alt="User Profile" data-alt="A professional studio portrait of a high-tech software engineer with thoughtful eyes, lit by cool blue and magenta ambient light reflecting on their face. The background is a dark, out-of-focus laboratory setting. The aesthetic is ultra-modern, cinematic, and sophisticated, matching an AI-driven enterprise software interface with deep blacks and vibrant neon accents." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCvXhfIIrGj4DgjpJOQ-mcY-QC6Ir1vBM1JvHNT7bhP6s7ofS1UujF_ESLJZu1JsfLLiY4hrzW6txwHDyqYkZ0HTQfUW0w_lE21LrbgZiinxj_BgrcnYlXpki7h_y6zTRKfy9EQCECCsJ8BS8KhN_7Sy4jTx-Fy-luVuxFJQyJk5-KAvLAX5KSzg89GwJ4Df8PjQODMXsb-syQR8MALFV0ot3DIeBpG3r8djbyBPlzR_1tTVoFlZ3zXAcu5jhcsmbg3AVAh-Wo0ypk"/>
-</div>
-</div>
-</header>
-{/* Main Content Canvas */}
-<main className="ml-[260px] pt-16 min-h-screen p-lg">
-{/* Header Section */}
-<section className="flex justify-between items-end mb-lg">
-<div>
-<h2 className="font-headline-lg text-headline-lg text-on-surface">Intelligence Insights</h2>
-<p className="text-on-surface-variant mt-xs">Synthesized analysis from cross-camera neural processing.</p>
-</div>
-<div className="flex items-center gap-sm">
-<div className="bg-surface-container-low border border-outline-variant rounded-lg px-sm py-xs flex items-center gap-xs">
-<span className="material-symbols-outlined text-[18px]">calendar_today</span>
-<span className="font-label-md text-on-surface">Oct 12 - Oct 19, 2023</span>
-</div>
-<button className="bg-[#3B82F6] text-white px-md py-xs rounded-lg font-label-md flex items-center gap-xs electric-glow hover:bg-blue-600 transition-colors">
-<span className="material-symbols-outlined text-[18px]">download</span>
-                    Export Report
-                </button>
-</div>
-</section>
-{/* Metric Cards Grid */}
-<section className="grid grid-cols-1 md:grid-cols-3 gap-md mb-lg">
-<div className="ultra-dark-card p-md rounded-xl">
-<p className="font-label-md text-on-surface-variant mb-xs uppercase tracking-tighter text-[11px]">Total Insights</p>
-<div className="flex items-baseline gap-xs">
-<span className="font-headline-lg text-headline-lg text-on-surface">12,842</span>
-<span className="text-primary font-label-md text-[12px]">+14.2%</span>
-</div>
-<div className="w-full h-1 bg-surface-container-high mt-md rounded-full overflow-hidden">
-<div className="h-full bg-primary w-3/4 shadow-[0_0_8px_rgba(173,198,255,0.5)]"></div>
-</div>
-</div>
-<div className="ultra-dark-card p-md rounded-xl">
-<p className="font-label-md text-on-surface-variant mb-xs uppercase tracking-tighter text-[11px]">Detection Accuracy</p>
-<div className="flex items-baseline gap-xs">
-<span className="font-headline-lg text-headline-lg text-on-surface">98.4%</span>
-<span className="text-tertiary font-label-md text-[12px]">Optimized</span>
-</div>
-<div className="w-full h-1 bg-surface-container-high mt-md rounded-full overflow-hidden">
-<div className="h-full bg-tertiary w-[98%] shadow-[0_0_8px_rgba(255,183,134,0.5)]"></div>
-</div>
-</div>
-<div className="ultra-dark-card p-md rounded-xl">
-<p className="font-label-md text-on-surface-variant mb-xs uppercase tracking-tighter text-[11px]">Processing Efficiency</p>
-<div className="flex items-baseline gap-xs">
-<span className="font-headline-lg text-headline-lg text-on-surface">42ms</span>
-<span className="text-primary font-label-md text-[12px]">-2ms</span>
-</div>
-<div className="w-full h-1 bg-surface-container-high mt-md rounded-full overflow-hidden">
-<div className="h-full bg-gradient-to-r from-primary to-cyan-400 w-4/5"></div>
-</div>
-</div>
-</section>
-{/* Topic Clusters Section */}
-<section className="grid grid-cols-1 lg:grid-cols-12 gap-md mb-lg">
-<div className="lg:col-span-4 ultra-dark-card p-md rounded-xl flex flex-col">
-<div className="flex justify-between items-start mb-lg">
-<h3 className="font-headline-md text-headline-md text-on-surface">Topic Clusters</h3>
-<span className="material-symbols-outlined text-on-surface-variant">info</span>
-</div>
-<div className="flex-1 flex items-center justify-center py-md">
-{/* Custom SVG Radar Chart */}
-<svg className="w-full max-w-[240px] drop-shadow-[0_0_15px_rgba(59,130,246,0.2)]" viewBox="0 0 200 200">
-<circle className="radar-grid" cx="100" cy="100" fill="none" r="80"></circle>
-<circle className="radar-grid" cx="100" cy="100" fill="none" r="60"></circle>
-<circle className="radar-grid" cx="100" cy="100" fill="none" r="40"></circle>
-<line className="radar-grid" x1="100" x2="100" y1="20" y2="180"></line>
-<line className="radar-grid" x1="20" x2="180" y1="100" y2="100"></line>
-{/* Data Shape */}
-<polygon className="radar-shape" points="100,40 160,100 100,150 50,100" ></polygon>
-<polygon fill="rgba(153, 102, 255, 0.2)" points="100,60 140,100 100,130 70,100" stroke="#9966ff" stroke-width="1.5"></polygon>
-</svg>
-</div>
-<div className="grid grid-cols-2 gap-sm mt-md">
-<div className="flex items-center gap-xs">
-<div className="w-2 h-2 rounded-full bg-primary"></div>
-<span className="text-[12px] text-on-surface-variant">Security</span>
-</div>
-<div className="flex items-center gap-xs">
-<div className="w-2 h-2 rounded-full bg-[#9966ff]"></div>
-<span className="text-[12px] text-on-surface-variant">Operations</span>
-</div>
-<div className="flex items-center gap-xs">
-<div className="w-2 h-2 rounded-full bg-tertiary"></div>
-<span className="text-[12px] text-on-surface-variant">Maintenance</span>
-</div>
-<div className="flex items-center gap-xs">
-<div className="w-2 h-2 rounded-full bg-error"></div>
-<span className="text-[12px] text-on-surface-variant">Anomalies</span>
-</div>
-</div>
-</div>
-{/* Key Moments & Trends */}
-<div className="lg:col-span-8 ultra-dark-card p-md rounded-xl flex flex-col">
-<div className="flex justify-between items-center mb-lg">
-<h3 className="font-headline-md text-headline-md text-on-surface">Intelligence Frequency</h3>
-<div className="flex gap-sm">
-<button className="text-[12px] font-label-md px-sm py-1 rounded bg-surface-container-high text-primary">Hourly</button>
-<button className="text-[12px] font-label-md px-sm py-1 rounded text-on-surface-variant hover:text-on-surface">Daily</button>
-</div>
-</div>
-<div className="flex-1 relative min-h-[300px] chart-gradient-blue rounded-lg border-b border-l border-[#262626]">
-{/* Simulated Neon Line Chart */}
-<svg className="absolute inset-0 w-full h-full" preserveAspectRatio="none" viewBox="0 0 1000 300">
-<defs>
-<linearGradient id="lineGrad" x1="0%" x2="0%" y1="0%" y2="100%">
-<stop offset="0%" ></stop>
-<stop offset="100%" ></stop>
-</linearGradient>
-</defs>
-<path d="M0,250 Q100,200 200,220 T400,100 T600,150 T800,80 L1000,120 V300 H0 Z" fill="url(#lineGrad)"></path>
-<path className="electric-glow" d="M0,250 Q100,200 200,220 T400,100 T600,150 T800,80 L1000,120" fill="none" stroke="#3b82f6" stroke-width="3"></path>
-{/* Data Points */}
-<circle className="animate-pulse" cx="400" cy="100" fill="#3b82f6" r="4"></circle>
-<circle className="animate-pulse" cx="800" cy="80" fill="#3b82f6" r="4"></circle>
-</svg>
-{/* Time Markers */}
-<div className="absolute bottom-[-24px] w-full flex justify-between px-xs">
-<span className="text-[10px] text-outline uppercase">08:00</span>
-<span className="text-[10px] text-outline uppercase">10:00</span>
-<span className="text-[10px] text-outline uppercase">12:00</span>
-<span className="text-[10px] text-outline uppercase">14:00</span>
-<span className="text-[10px] text-outline uppercase">16:00</span>
-<span className="text-[10px] text-outline uppercase">18:00</span>
-</div>
-</div>
-</div>
-</section>
-{/* Recent Insight Triggers Grid */}
-<section className="ultra-dark-card rounded-xl overflow-hidden">
-<div className="px-md py-sm border-b border-[#262626] flex justify-between items-center">
-<h3 className="font-label-md text-on-surface">Recent Insight Triggers</h3>
-<button className="text-primary text-[12px] font-label-md hover:underline">View All Logs</button>
-</div>
-<div className="divide-y divide-[#262626]">
-{/* Item 1 */}
-<div className="px-md py-sm flex items-center justify-between hover:bg-surface-container-low transition-colors group">
-<div className="flex items-center gap-md">
-<div className="w-10 h-10 rounded bg-surface-container-high flex items-center justify-center text-primary">
-<span className="material-symbols-outlined">warning</span>
-</div>
-<div>
-<p className="font-body-sm text-on-surface font-medium">Unusual Crowd Density</p>
-<p className="text-[12px] text-on-surface-variant">Zone B-4 â¢ Entrance North</p>
-</div>
-</div>
-<div className="text-right">
-<p className="font-code-sm text-on-surface">14:22:01</p>
-<p className="text-[10px] text-error uppercase font-bold">High Priority</p>
-</div>
-</div>
-{/* Item 2 */}
-<div className="px-md py-sm flex items-center justify-between hover:bg-surface-container-low transition-colors group">
-<div className="flex items-center gap-md">
-<div className="w-10 h-10 rounded bg-surface-container-high flex items-center justify-center text-tertiary">
-<span className="material-symbols-outlined">sync_alt</span>
-</div>
-<div>
-<p className="font-body-sm text-on-surface font-medium">Maintenance Cycle Predicted</p>
-<p className="text-[12px] text-on-surface-variant">Elevator Shaft 2 â¢ Main Hub</p>
-</div>
-</div>
-<div className="text-right">
-<p className="font-code-sm text-on-surface">13:45:12</p>
-<p className="text-[10px] text-primary uppercase font-bold">Scheduled</p>
-</div>
-</div>
-{/* Item 3 */}
-<div className="px-md py-sm flex items-center justify-between hover:bg-surface-container-low transition-colors group">
-<div className="flex items-center gap-md">
-<div className="w-10 h-10 rounded bg-surface-container-high flex items-center justify-center text-on-surface-variant">
-<span className="material-symbols-outlined">verified</span>
-</div>
-<div>
-<p className="font-body-sm text-on-surface font-medium">Shift Handover Success</p>
-<p className="text-[12px] text-on-surface-variant">Loading Dock 1 â¢ Warehouse</p>
-</div>
-</div>
-<div className="text-right">
-<p className="font-code-sm text-on-surface">12:10:55</p>
-<p className="text-[10px] text-on-surface-variant uppercase font-bold">Operational</p>
-</div>
-</div>
-</div>
-</section>
-</main>
+    <div className="pb-12 font-sans space-y-8">
+      {/* Header Section */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2 text-xs font-bold text-blue-500 uppercase tracking-widest mb-1.5">
+            <TrendingUp className="w-3.5 h-3.5" /> Intelligence Analytics
+          </div>
+          <h1 className="text-3xl font-bold text-white tracking-tight">Telemetry Insights</h1>
+          <p className="text-gray-400 text-sm mt-1">Synthesized deep neural metrics across all ingested video feeds.</p>
+        </div>
 
+        <div className="flex items-center gap-3">
+          <div className="bg-[#0A0A0A] border border-[#262626] rounded-xl px-4 py-2 flex items-center gap-2 text-xs text-gray-300">
+            <Calendar className="w-4 h-4 text-blue-400" />
+            <span>Active Session Period</span>
+          </div>
+          <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl text-xs font-medium transition-all shadow-[0_0_15px_rgba(37,99,235,0.3)] flex items-center gap-2">
+            <Download className="w-4 h-4" /> Export Report
+          </button>
+        </div>
+      </div>
 
-    </>
+      {/* Metric Cards Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Card 1 */}
+        <div className="bg-[#0A0A0A] border border-[#262626] p-6 rounded-2xl relative overflow-hidden group hover:border-gray-800 transition-colors">
+          <div className="flex justify-between items-start mb-4">
+            <div>
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Total Videos Ingested</p>
+              <h3 className="text-3xl font-extrabold text-white mt-1">{isLoading ? '...' : totalCount}</h3>
+            </div>
+            <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
+              <Video className="w-5 h-5" />
+            </div>
+          </div>
+          <div className="w-full bg-[#141414] h-1.5 rounded-full overflow-hidden border border-[#262626]">
+            <div className="bg-blue-500 h-full w-4/5"></div>
+          </div>
+          <p className="text-2xs text-gray-500 mt-3 font-mono">100% processed via Gemini 2.5 Flash</p>
+        </div>
+
+        {/* Card 2 */}
+        <div className="bg-[#0A0A0A] border border-[#262626] p-6 rounded-2xl relative overflow-hidden group hover:border-gray-800 transition-colors">
+          <div className="flex justify-between items-start mb-4">
+            <div>
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Analysis Success Rate</p>
+              <h3 className="text-3xl font-extrabold text-white mt-1">{accuracyRate}%</h3>
+            </div>
+            <div className="w-10 h-10 rounded-xl bg-green-500/10 border border-green-500/20 flex items-center justify-center text-green-400">
+              <CheckCircle className="w-5 h-5" />
+            </div>
+          </div>
+          <div className="w-full bg-[#141414] h-1.5 rounded-full overflow-hidden border border-[#262626]">
+            <div className="bg-green-500 h-full" style={{ width: `${accuracyRate}%` }}></div>
+          </div>
+          <p className="text-2xs text-green-400 mt-3 font-mono flex items-center gap-1">
+            <ShieldCheck className="w-3 h-3" /> Fully Verified Transcripts
+          </p>
+        </div>
+
+        {/* Card 3 */}
+        <div className="bg-[#0A0A0A] border border-[#262626] p-6 rounded-2xl relative overflow-hidden group hover:border-gray-800 transition-colors">
+          <div className="flex justify-between items-start mb-4">
+            <div>
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Active Ingestion Pipeline</p>
+              <h3 className="text-3xl font-extrabold text-white mt-1">{processingCount} pending</h3>
+            </div>
+            <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
+              <Clock className="w-5 h-5" />
+            </div>
+          </div>
+          <div className="w-full bg-[#141414] h-1.5 rounded-full overflow-hidden border border-[#262626]">
+            <div className="bg-cyan-400 h-full w-2/3 animate-pulse"></div>
+          </div>
+          <p className="text-2xs text-gray-500 mt-3 font-mono">RabbitMQ Queue: Active</p>
+        </div>
+      </div>
+
+      {/* Intelligence Frequency Section */}
+      <div className="bg-[#0A0A0A] border border-[#262626] rounded-2xl p-6">
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h3 className="text-base font-bold text-white flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-blue-500" /> Intelligence Frequency
+            </h3>
+            <p className="text-xs text-gray-400 mt-0.5">Automated visual density and scene highlight telemetry timeline.</p>
+          </div>
+          <span className="text-xs font-mono text-blue-400 bg-blue-500/10 border border-blue-500/20 px-3 py-1 rounded-full">
+            REAL-TIME STREAM
+          </span>
+        </div>
+
+        <div className="relative h-64 w-full bg-[#050505] rounded-xl border border-[#1f1f1f] p-4 flex items-end justify-between gap-2 overflow-hidden">
+          {/* Simulated Neon Telemetry Bars */}
+          {[40, 65, 30, 85, 95, 50, 75, 90, 60, 80, 100, 70, 85, 90, 60, 95].map((height, idx) => (
+            <div key={idx} className="flex-1 flex flex-col items-center gap-2 h-full justify-end group">
+              <div 
+                className="w-full bg-gradient-to-t from-blue-600 via-cyan-400 to-blue-400 rounded-t transition-all duration-500 group-hover:brightness-125 shadow-[0_0_10px_rgba(59,130,246,0.3)]"
+                style={{ height: `${height}%` }}
+              ></div>
+              <span className="text-[9px] font-mono text-gray-600 group-hover:text-gray-300">{idx * 2}h</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Processed Feed Logs */}
+      <div className="bg-[#0A0A0A] border border-[#262626] rounded-2xl p-6">
+        <h3 className="text-base font-bold text-white mb-4 flex items-center gap-2">
+          <Activity className="w-4 h-4 text-blue-500" />
+          Recent Ingestion History
+        </h3>
+
+        <div className="space-y-3">
+          {videoList.slice(0, 5).map((v) => (
+            <div key={v.id} className="bg-[#141414] border border-[#262626] rounded-xl p-4 flex items-center justify-between">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 flex-shrink-0">
+                  <Video className="w-4 h-4" />
+                </div>
+                <div className="min-w-0">
+                  <h4 className="text-xs font-semibold text-white truncate">{v.title}</h4>
+                  <span className="text-[10px] text-gray-500 font-mono">{new Date(v.createdAt).toLocaleDateString()}</span>
+                </div>
+              </div>
+              <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-semibold border ${
+                v.status === 'COMPLETED' ? 'bg-green-500/10 text-green-400 border-green-500/20' : 'bg-blue-500/10 text-blue-400 border-blue-500/20'
+              }`}>
+                {v.status}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
   );
 }

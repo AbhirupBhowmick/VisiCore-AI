@@ -172,7 +172,7 @@ def analyze_video_with_gemini(video_path: str, video_title: str) -> dict:
     for attempt in range(4):  # up to 4 tries
         try:
             response = client.models.generate_content(
-                model="gemini-2.5-flash",
+                model="gemini-3.6-flash",
                 contents=[
                     types.Part.from_uri(file_uri=video_file.uri, mime_type=mime_type),
                     TRANSCRIPT_PROMPT

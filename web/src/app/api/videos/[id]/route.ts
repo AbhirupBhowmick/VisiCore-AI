@@ -8,12 +8,17 @@ export async function GET(
   props: { params: Promise<{ id: string }> | { id: string } }
 ) {
   try {
+    const user = getUserFromRequest(request);
+    if (!user) {
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    }
+
     const params = await props.params;
     const { id } = params;
 
     const res = await query(
       `SELECT 
-        v.id, v.title, v.status, v.minio_url, v.duration, v.created_at,
+        v.id, v.title, v.status, v.minio_url, v.duration, v.created_at, v.user_id,
         t.id AS transcript_id, t.content AS transcript_content, t.timestamps AS transcript_timestamps,
         s.id AS summary_id, s.short_summary, s.detailed_summary
       FROM videos v
@@ -28,6 +33,9 @@ export async function GET(
     }
 
     const row = res.rows[0];
+    if (row.user_id !== user.id) {
+      return NextResponse.json({ message: 'Unauthorized to view this video' }, { status: 403 });
+    }
     const video = {
       id: row.id,
       title: row.title,

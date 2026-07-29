@@ -1,263 +1,241 @@
+"use client";
+
 import React from 'react';
+import { useQuery } from '@tanstack/react-query';
+import api from '../../../lib/api';
+import { 
+  Cpu, Database, ShieldCheck, RefreshCw, Download, 
+  AlertCircle, CheckCircle, Clock, Activity, Server, FileVideo
+} from 'lucide-react';
 
-export default function Page() {
+interface TelemetryData {
+  systemStatus: string;
+  version: string;
+  stats: {
+    totalUsers: number;
+    totalVideos: number;
+    completedVideos: number;
+    processingVideos: number;
+    failedVideos: number;
+  };
+  failedJobs: Array<{
+    id: string;
+    title: string;
+    status: string;
+    minioUrl: string;
+    createdAt: string;
+  }>;
+}
+
+export default function AdminPage() {
+  const { data, isLoading, error, refetch } = useQuery<TelemetryData>({
+    queryKey: ['admin-stats'],
+    queryFn: async () => {
+      const response = await api.get('/api/admin/stats');
+      return response.data;
+    },
+    refetchInterval: 5000,
+  });
+
+  const stats = data?.stats || {
+    totalUsers: 0,
+    totalVideos: 0,
+    completedVideos: 0,
+    processingVideos: 0,
+    failedVideos: 0,
+  };
+
+  const failedJobs = data?.failedJobs || [];
+
+  const handleRetryJob = async (id: string) => {
+    try {
+      await api.post(`/api/videos/${id}/retry`);
+      refetch();
+    } catch (err) {
+      console.error('Failed to retry video job:', err);
+      alert('Failed to re-queue job. Please check system logs.');
+    }
+  };
+
   return (
-    <>
-      
-{/* SideNavBar Shell */}
-<nav className="fixed left-0 top-0 h-full w-[260px] bg-surface dark:bg-surface border-r border-outline-variant dark:border-outline-variant flex flex-col p-md space-y-xs z-50">
-<div className="mb-lg">
-<h1 className="font-headline-md text-headline-md font-semibold text-primary dark:text-primary">AI Vision Admin</h1>
-<p className="font-label-md text-label-md text-on-surface-variant opacity-60">v2.4.0-stable</p>
-</div>
-<div className="flex-1 space-y-xs">
-<a className="flex items-center gap-sm p-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-colors duration-200 cursor-pointer active:scale-95 rounded-xl" href="#">
-<span className="material-symbols-outlined">group</span>
-<span className="font-label-md text-label-md">Users</span>
-</a>
-<a className="flex items-center gap-sm p-sm bg-secondary-container text-on-secondary-container rounded-xl cursor-pointer active:scale-95" href="#">
-<span className="material-symbols-outlined">queue_play_next</span>
-<span className="font-label-md text-label-md">Job Queue</span>
-</a>
-<a className="flex items-center gap-sm p-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-colors duration-200 cursor-pointer active:scale-95 rounded-xl" href="#">
-<span className="material-symbols-outlined">terminal</span>
-<span className="font-label-md text-label-md">Logs</span>
-</a>
-<a className="flex items-center gap-sm p-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-colors duration-200 cursor-pointer active:scale-95 rounded-xl" href="#">
-<span className="material-symbols-outlined">settings</span>
-<span className="font-label-md text-label-md">Settings</span>
-</a>
-</div>
-<button className="w-full bg-[#3B82F6] text-white font-label-md py-sm rounded-lg glow-blue active:scale-95 transition-all mb-md">
-            New Analysis
-        </button>
-<div className="pt-md border-t border-outline-variant space-y-xs">
-<a className="flex items-center gap-sm p-xs text-on-surface-variant hover:text-on-surface font-label-md text-label-md transition-colors" href="#">
-<span className="material-symbols-outlined">description</span>
-<span>Documentation</span>
-</a>
-<a className="flex items-center gap-sm p-xs text-on-surface-variant hover:text-on-surface font-label-md text-label-md transition-colors" href="#">
-<span className="material-symbols-outlined">help</span>
-<span>Support</span>
-</a>
-</div>
-</nav>
-{/* TopNavBar Shell */}
-<header className="fixed top-0 right-0 w-[calc(100%-260px)] z-40 bg-surface-container-low dark:bg-surface-container-low border-b border-outline-variant dark:border-outline-variant flex justify-between items-center h-16 px-margin">
-<div className="flex items-center gap-lg flex-1">
-<span className="font-headline-md text-headline-md text-on-surface font-bold tracking-tight">Control Center</span>
-<div className="relative w-full max-w-md focus-within:ring-1 focus-within:ring-primary rounded-lg">
-<span className="material-symbols-outlined absolute left-sm top-1/2 -translate-y-1/2 text-on-surface-variant text-sm">search</span>
-<input className="w-full bg-surface-container-lowest border-none pl-10 pr-sm py-xs text-body-sm rounded-lg focus:ring-0 text-on-surface placeholder:text-outline-variant" placeholder="Search nodes, jobs, or logs..." type="text"/>
-</div>
-</div>
-<div className="flex items-center gap-md">
-<div className="flex items-center gap-xs text-primary font-body-sm">
-<span className="material-symbols-outlined text-[18px]">check_circle</span>
-<span>System Healthy</span>
-</div>
-<div className="flex items-center gap-sm text-on-surface-variant">
-<span className="material-symbols-outlined hover:text-on-surface cursor-pointer transition-opacity">notifications</span>
-<span className="material-symbols-outlined hover:text-on-surface cursor-pointer transition-opacity">cloud_done</span>
-<span className="material-symbols-outlined hover:text-on-surface cursor-pointer transition-opacity">account_circle</span>
-</div>
-</div>
-</header>
-{/* Main Content Canvas */}
-<main className="ml-[260px] mt-16 p-margin h-[calc(100vh-64px)] overflow-y-auto custom-scrollbar">
-{/* System Health Section (Bento Style) */}
-<section className="mb-xl">
-<div className="flex items-center justify-between mb-md">
-<h2 className="font-headline-lg text-headline-lg text-on-surface">System Health</h2>
-<span className="font-code-sm text-code-sm text-outline-variant uppercase tracking-widest">Real-time Telemetry</span>
-</div>
-<div className="grid grid-cols-1 md:grid-cols-3 gap-gutter">
-{/* CPU Graph */}
-<div className="bg-surface-container border border-outline-variant p-md rounded-xl">
-<div className="flex justify-between items-start mb-sm">
-<div>
-<p className="font-label-md text-label-md text-on-surface-variant">CPU Usage</p>
-<h3 className="font-headline-md text-headline-md font-bold">42.8%</h3>
-</div>
-<span className="material-symbols-outlined text-primary glow-blue">memory</span>
-</div>
-<div className="h-16 flex items-end gap-[2px]">
-{/* Simple high-density bar representation for a "graph" look */}
-<div className="w-full bg-[#3B82F6] h-[30%] opacity-40"></div>
-<div className="w-full bg-[#3B82F6] h-[45%] opacity-50"></div>
-<div className="w-full bg-[#3B82F6] h-[60%] opacity-60"></div>
-<div className="w-full bg-[#3B82F6] h-[40%] opacity-70"></div>
-<div className="w-full bg-[#3B82F6] h-[35%] opacity-80"></div>
-<div className="w-full bg-[#3B82F6] h-[50%] opacity-90"></div>
-<div className="w-full bg-[#3B82F6] h-[42%] health-gradient"></div>
-</div>
-<div className="mt-sm flex justify-between font-code-sm text-code-sm text-outline-variant">
-<span>-15m</span>
-<span>Now</span>
-</div>
-</div>
-{/* Memory Graph */}
-<div className="bg-surface-container border border-outline-variant p-md rounded-xl">
-<div className="flex justify-between items-start mb-sm">
-<div>
-<p className="font-label-md text-label-md text-on-surface-variant">Memory Load</p>
-<h3 className="font-headline-md text-headline-md font-bold">12.4 GB</h3>
-</div>
-<span className="material-symbols-outlined text-primary glow-blue">database</span>
-</div>
-<div className="h-16 flex items-end gap-[2px]">
-<div className="w-full bg-[#3B82F6] h-[70%] opacity-40"></div>
-<div className="w-full bg-[#3B82F6] h-[72%] opacity-50"></div>
-<div className="w-full bg-[#3B82F6] h-[68%] opacity-60"></div>
-<div className="w-full bg-[#3B82F6] h-[75%] opacity-70"></div>
-<div className="w-full bg-[#3B82F6] h-[80%] opacity-80"></div>
-<div className="w-full bg-[#3B82F6] h-[78%] opacity-90"></div>
-<div className="w-full bg-[#3B82F6] h-[75%] health-gradient"></div>
-</div>
-<div className="mt-sm flex justify-between font-code-sm text-code-sm text-outline-variant">
-<span>-15m</span>
-<span>Now</span>
-</div>
-</div>
-{/* DB Health Graph */}
-<div className="bg-surface-container border border-outline-variant p-md rounded-xl">
-<div className="flex justify-between items-start mb-sm">
-<div>
-<p className="font-label-md text-label-md text-on-surface-variant">DB Health</p>
-<h3 className="font-headline-md text-headline-md font-bold">99.9%</h3>
-</div>
-<span className="material-symbols-outlined text-primary glow-blue">shield</span>
-</div>
-<div className="h-16 flex items-end gap-[2px]">
-<div className="w-full bg-[#3B82F6] h-[95%] opacity-40"></div>
-<div className="w-full bg-[#3B82F6] h-[98%] opacity-50"></div>
-<div className="w-full bg-[#3B82F6] h-[99%] opacity-60"></div>
-<div className="w-full bg-[#3B82F6] h-[97%] opacity-70"></div>
-<div className="w-full bg-[#3B82F6] h-[99%] opacity-80"></div>
-<div className="w-full bg-[#3B82F6] h-[99.5%] opacity-90"></div>
-<div className="w-full bg-[#3B82F6] h-[99.9%] health-gradient"></div>
-</div>
-<div className="mt-sm flex justify-between font-code-sm text-code-sm text-outline-variant">
-<span>-15m</span>
-<span>Now</span>
-</div>
-</div>
-</div>
-</section>
-{/* Failed AI Processing Jobs Section */}
-<section>
-<div className="flex items-center justify-between mb-md">
-<h2 className="font-headline-lg text-headline-lg text-on-surface">Failed AI Processing Jobs</h2>
-<div className="flex gap-sm">
-<button className="bg-surface-container-highest border border-outline-variant px-sm py-xs rounded-lg text-body-sm font-medium hover:bg-outline-variant transition-colors">Export CSV</button>
-<button className="bg-[#3B82F6] text-white px-sm py-xs rounded-lg text-body-sm font-medium glow-blue active:scale-95 transition-all">Retry All</button>
-</div>
-</div>
-<div className="bg-surface-container border border-outline-variant rounded-xl overflow-hidden">
-<table className="w-full text-left border-collapse">
-<thead className="bg-surface-container-high text-on-surface-variant font-label-md text-label-md uppercase tracking-wider">
-<tr>
-<th className="px-md py-sm border-b border-outline-variant">Job ID</th>
-<th className="px-md py-sm border-b border-outline-variant">User</th>
-<th className="px-md py-sm border-b border-outline-variant">Error Reason</th>
-<th className="px-md py-sm border-b border-outline-variant">Timestamp</th>
-<th className="px-md py-sm border-b border-outline-variant text-right">Actions</th>
-</tr>
-</thead>
-<tbody className="divide-y divide-outline-variant">
-{/* Row 1 */}
-<tr className="hover:bg-surface-container-low transition-colors group">
-<td className="px-md py-md font-code-sm text-code-sm text-primary">#JOB-8842-AX</td>
-<td className="px-md py-md text-body-sm font-medium">alec_vogel_ai</td>
-<td className="px-md py-md">
-<span className="bg-error-container/20 text-error border border-error/30 px-xs py-[2px] rounded text-[11px] font-bold uppercase">OOM Error</span>
-</td>
-<td className="px-md py-md text-on-surface-variant text-body-sm">2 min ago</td>
-<td className="px-md py-md text-right">
-<button className="text-primary font-label-md hover:underline active:scale-95 transition-transform flex items-center justify-end gap-xs w-full">
-<span className="material-symbols-outlined text-sm">refresh</span>
-                                    Retry
-                                </button>
-</td>
-</tr>
-{/* Row 2 */}
-<tr className="hover:bg-surface-container-low transition-colors group">
-<td className="px-md py-md font-code-sm text-code-sm text-primary">#JOB-9102-BQ</td>
-<td className="px-md py-md text-body-sm font-medium">vision_lead_01</td>
-<td className="px-md py-md">
-<span className="bg-error-container/20 text-error border border-error/30 px-xs py-[2px] rounded text-[11px] font-bold uppercase">Timeout</span>
-</td>
-<td className="px-md py-md text-on-surface-variant text-body-sm">14 min ago</td>
-<td className="px-md py-md text-right">
-<button className="text-primary font-label-md hover:underline active:scale-95 transition-transform flex items-center justify-end gap-xs w-full">
-<span className="material-symbols-outlined text-sm">refresh</span>
-                                    Retry
-                                </button>
-</td>
-</tr>
-{/* Row 3 */}
-<tr className="hover:bg-surface-container-low transition-colors group">
-<td className="px-md py-md font-code-sm text-code-sm text-primary">#JOB-0021-CZ</td>
-<td className="px-md py-md text-body-sm font-medium">root_admin</td>
-<td className="px-md py-md">
-<span className="bg-error-container/20 text-error border border-error/30 px-xs py-[2px] rounded text-[11px] font-bold uppercase">CUDA Error</span>
-</td>
-<td className="px-md py-md text-on-surface-variant text-body-sm">45 min ago</td>
-<td className="px-md py-md text-right">
-<button className="text-primary font-label-md hover:underline active:scale-95 transition-transform flex items-center justify-end gap-xs w-full">
-<span className="material-symbols-outlined text-sm">refresh</span>
-                                    Retry
-                                </button>
-</td>
-</tr>
-{/* Row 4 */}
-<tr className="hover:bg-surface-container-low transition-colors group">
-<td className="px-md py-md font-code-sm text-code-sm text-primary">#JOB-1193-DL</td>
-<td className="px-md py-md text-body-sm font-medium">dev_sandbox_04</td>
-<td className="px-md py-md">
-<span className="bg-error-container/20 text-error border border-error/30 px-xs py-[2px] rounded text-[11px] font-bold uppercase">OOM Error</span>
-</td>
-<td className="px-md py-md text-on-surface-variant text-body-sm">1 hour ago</td>
-<td className="px-md py-md text-right">
-<button className="text-primary font-label-md hover:underline active:scale-95 transition-transform flex items-center justify-end gap-xs w-full">
-<span className="material-symbols-outlined text-sm">refresh</span>
-                                    Retry
-                                </button>
-</td>
-</tr>
-{/* Row 5 */}
-<tr className="hover:bg-surface-container-low transition-colors group">
-<td className="px-md py-md font-code-sm text-code-sm text-primary">#JOB-5521-EP</td>
-<td className="px-md py-md text-body-sm font-medium">enterprise_user_9</td>
-<td className="px-md py-md">
-<span className="bg-error-container/20 text-error border border-error/30 px-xs py-[2px] rounded text-[11px] font-bold uppercase">Model Loading</span>
-</td>
-<td className="px-md py-md text-on-surface-variant text-body-sm">2 hours ago</td>
-<td className="px-md py-md text-right">
-<button className="text-primary font-label-md hover:underline active:scale-95 transition-transform flex items-center justify-end gap-xs w-full">
-<span className="material-symbols-outlined text-sm">refresh</span>
-                                    Retry
-                                </button>
-</td>
-</tr>
-</tbody>
-</table>
-<div className="px-md py-sm bg-surface-container-low border-t border-outline-variant flex justify-between items-center text-body-sm">
-<span className="text-on-surface-variant">Showing 5 of 142 failed jobs</span>
-<div className="flex gap-xs">
-<button className="p-xs hover:bg-surface-container-highest rounded transition-colors text-on-surface-variant"><span className="material-symbols-outlined text-sm">chevron_left</span></button>
-<button className="p-xs hover:bg-surface-container-highest rounded transition-colors text-on-surface-variant"><span className="material-symbols-outlined text-sm">chevron_right</span></button>
-</div>
-</div>
-</div>
-</section>
-{/* Decorative UI Element: Background Texture */}
-<div className="fixed bottom-0 right-0 p-lg pointer-events-none opacity-5">
-<h1 className="text-[120px] font-bold text-on-surface tracking-tighter leading-none">VISICORE</h1>
-</div>
-</main>
+    <div className="pb-12 font-sans space-y-8">
+      {/* Top Title Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2 text-xs font-bold text-blue-500 uppercase tracking-widest mb-1.5">
+            <Server className="w-3.5 h-3.5" /> Platform Control Center
+          </div>
+          <h1 className="text-3xl font-bold text-white tracking-tight">AI Vision Admin</h1>
+          <p className="text-gray-400 text-sm mt-1">Real-time system health, telemetry, and background processing pipeline controls.</p>
+        </div>
 
+        <div className="flex items-center gap-3">
+          <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-green-500/10 text-green-400 border border-green-500/20">
+            <ShieldCheck className="w-4 h-4" /> {data?.systemStatus || 'System Healthy'}
+          </span>
+          <button 
+            onClick={() => refetch()}
+            className="p-2.5 rounded-xl bg-[#0A0A0A] border border-[#262626] text-gray-400 hover:text-white hover:border-gray-700 transition-all active:scale-95"
+            title="Refresh Telemetry"
+          >
+            <RefreshCw className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
 
-    </>
+      {/* System Health Section (Bento Style Grid) */}
+      <section>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-bold text-white flex items-center gap-2">
+            <Activity className="w-5 h-5 text-blue-500" />
+            System Health & Telemetry
+          </h2>
+          <span className="text-xs font-mono text-gray-500 uppercase tracking-widest">{data?.version || 'v2.5.0-stable'}</span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Card 1: Total Videos & Pipelines */}
+          <div className="bg-[#0A0A0A] border border-[#262626] p-6 rounded-2xl relative overflow-hidden group hover:border-gray-800 transition-colors">
+            <div className="flex justify-between items-start mb-4">
+              <div>
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Total Video Pipelines</p>
+                <h3 className="text-3xl font-extrabold text-white mt-1">{stats.totalVideos}</h3>
+              </div>
+              <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
+                <FileVideo className="w-5 h-5" />
+              </div>
+            </div>
+            <div className="w-full bg-[#141414] h-2 rounded-full overflow-hidden border border-[#262626]">
+              <div 
+                className="bg-blue-500 h-full transition-all duration-500" 
+                style={{ width: `${stats.totalVideos > 0 ? (stats.completedVideos / stats.totalVideos) * 100 : 100}%` }}
+              ></div>
+            </div>
+            <div className="mt-3 flex justify-between text-xs text-gray-400 font-mono">
+              <span>Completed: {stats.completedVideos}</span>
+              <span>Processing: {stats.processingVideos}</span>
+            </div>
+          </div>
+
+          {/* Card 2: Active Processing Load */}
+          <div className="bg-[#0A0A0A] border border-[#262626] p-6 rounded-2xl relative overflow-hidden group hover:border-gray-800 transition-colors">
+            <div className="flex justify-between items-start mb-4">
+              <div>
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Queue Processing Load</p>
+                <h3 className="text-3xl font-extrabold text-white mt-1">{stats.processingVideos} active</h3>
+              </div>
+              <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
+                <Cpu className="w-5 h-5" />
+              </div>
+            </div>
+            <div className="w-full bg-[#141414] h-2 rounded-full overflow-hidden border border-[#262626]">
+              <div className="bg-cyan-400 h-full w-2/3 animate-pulse"></div>
+            </div>
+            <div className="mt-3 flex justify-between text-xs text-gray-400 font-mono">
+              <span>RabbitMQ Queue: Ready</span>
+              <span>Worker Node: Online</span>
+            </div>
+          </div>
+
+          {/* Card 3: Database & Node Status */}
+          <div className="bg-[#0A0A0A] border border-[#262626] p-6 rounded-2xl relative overflow-hidden group hover:border-gray-800 transition-colors">
+            <div className="flex justify-between items-start mb-4">
+              <div>
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Database & Storage</p>
+                <h3 className="text-3xl font-extrabold text-white mt-1">99.9%</h3>
+              </div>
+              <div className="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400">
+                <Database className="w-5 h-5" />
+              </div>
+            </div>
+            <div className="w-full bg-[#141414] h-2 rounded-full overflow-hidden border border-[#262626]">
+              <div className="bg-purple-500 h-full w-[99.9%]"></div>
+            </div>
+            <div className="mt-3 flex justify-between text-xs text-gray-400 font-mono">
+              <span>PostgreSQL: Connected</span>
+              <span>MinIO S3: Healthy</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Failed AI Processing Jobs Section */}
+      <section>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+          <div>
+            <h2 className="text-lg font-bold text-white">Pipeline Jobs</h2>
+            <p className="text-xs text-gray-400">Monitoring worker task execution status and failure logs.</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={() => refetch()}
+              className="bg-[#141414] border border-[#262626] hover:bg-[#1f1f1f] text-gray-300 px-4 py-2 rounded-xl text-xs font-medium transition-all flex items-center gap-2"
+            >
+              <Download className="w-3.5 h-3.5" /> Export Logs
+            </button>
+            <button 
+              onClick={() => refetch()}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-xs font-semibold transition-all shadow-[0_0_15px_rgba(37,99,235,0.3)] flex items-center gap-2"
+            >
+              <RefreshCw className="w-3.5 h-3.5" /> Re-sync Queue
+            </button>
+          </div>
+        </div>
+
+        <div className="bg-[#0A0A0A] border border-[#262626] rounded-2xl overflow-hidden shadow-xl">
+          {isLoading ? (
+            <div className="p-12 text-center text-gray-400 text-sm font-mono">Loading telemetry logs...</div>
+          ) : error ? (
+            <div className="p-8 text-center text-red-400 text-sm flex items-center justify-center gap-2">
+              <AlertCircle className="w-5 h-5" /> Failed to load pipeline logs.
+            </div>
+          ) : failedJobs.length === 0 ? (
+            <div className="p-12 text-center flex flex-col items-center">
+              <CheckCircle className="w-10 h-10 text-green-400 mb-3" />
+              <h3 className="text-base font-semibold text-white">All Pipelines Operational</h3>
+              <p className="text-xs text-gray-400 mt-1">No failed video jobs detected in the processing queue.</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead className="bg-[#141414] text-gray-400 text-xs uppercase tracking-wider font-semibold border-b border-[#262626]">
+                  <tr>
+                    <th className="px-6 py-3.5">Video Title</th>
+                    <th className="px-6 py-3.5">Job ID</th>
+                    <th className="px-6 py-3.5">Status</th>
+                    <th className="px-6 py-3.5">Created At</th>
+                    <th className="px-6 py-3.5 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#1f1f1f] text-sm">
+                  {failedJobs.map((job) => (
+                    <tr key={job.id} className="hover:bg-[#121212] transition-colors">
+                      <td className="px-6 py-4 font-semibold text-white truncate max-w-xs">{job.title}</td>
+                      <td className="px-6 py-4 font-mono text-xs text-blue-400">{job.id.substring(0, 13)}...</td>
+                      <td className="px-6 py-4">
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-red-500/10 text-red-400 border border-red-500/20">
+                          <AlertCircle className="w-3 h-3" /> {job.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-xs text-gray-400 font-mono">
+                        {new Date(job.createdAt).toLocaleString()}
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <button 
+                          onClick={() => handleRetryJob(job.id)}
+                          className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-400 hover:text-blue-300 bg-blue-500/10 px-3 py-1.5 rounded-lg border border-blue-500/20 hover:bg-blue-500/20 transition-all cursor-pointer"
+                        >
+                          <RefreshCw className="w-3.5 h-3.5" /> Re-queue
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </section>
+    </div>
   );
 }

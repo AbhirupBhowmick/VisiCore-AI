@@ -118,9 +118,17 @@ describe('Video Route Handlers', () => {
   });
 
   describe('GET & DELETE /api/videos/[id]', () => {
+    it('GET returns 401 when request is unauthenticated', async () => {
+      const req = new Request('http://localhost:3000/api/videos/some-id');
+      const res = await getVideoByIdHandler(req, { params: { id: 'some-id' } });
+      expect(res.status).toBe(401);
+    });
+
     it('GET returns 404 if video is missing', async () => {
       vi.mocked(db.query).mockResolvedValueOnce(mockQueryResult([]));
-      const req = new Request('http://localhost:3000/api/videos/nonexistent-id');
+      const req = new Request('http://localhost:3000/api/videos/nonexistent-id', {
+        headers: { Authorization: `Bearer ${validToken}` },
+      });
       const res = await getVideoByIdHandler(req, { params: { id: 'nonexistent-id' } });
       expect(res.status).toBe(404);
     });
