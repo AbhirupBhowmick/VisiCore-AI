@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { UploadCloud, CheckCircle, AlertCircle, FileVideo, Sparkles, ChevronRight } from 'lucide-react';
 import api from '../../../lib/api';
+import axios from 'axios';
 
 export default function UploadPage() {
   const [isDragging, setIsDragging] = useState(false);
@@ -75,15 +76,22 @@ export default function UploadPage() {
     
     setStatus('uploading');
     setUploadProgress(0);
-    
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('title', file.name);
 
     try {
-      await api.post('/api/videos/upload', formData, {
+      // Step 1: Initialize upload and get Cloudflare R2 / MinIO presigned PUT URL
+      const initResponse = await api.post('/api/videos/upload/init', {
+        filename: file.name,
+        contentType: file.type || 'video/mp4',
+        size: file.size,
+        title: file.name
+      });
+
+      const { uploadUrl, objectKey, minioUrl } = initResponse.data;
+
+      // Step 2: Upload file bytes DIRECTLY to Cloudflare R2 / MinIO (bypasses Vercel 413 Payload Too Large limits)
+      await axios.put(uploadUrl, file, {
         headers: {
-          'Content-Type': 'multipart/form-data',
+          'Content-Type': file.type || 'video/mp4',
         },
         onUploadProgress: (progressEvent) => {
           if (progressEvent.total) {
@@ -91,6 +99,13 @@ export default function UploadPage() {
             setUploadProgress(percentCompleted);
           }
         }
+      });
+
+      // Step 3: Complete upload and register video record in database & RabbitMQ queue
+      await api.post('/api/videos/upload/complete', {
+        objectKey,
+        minioUrl,
+        title: file.name
       });
       
       setStatus('success');
@@ -100,7 +115,7 @@ export default function UploadPage() {
     } catch (err: unknown) {
       setStatus('error');
       const errorResponse = err as { response?: { data?: { message?: string } } };
-      setErrorMsg(errorResponse.response?.data?.message || 'Failed to upload video stream. Please check connection.');
+      setErrorMsg(errorResponse.response?.data?.message || 'Direct video upload failed. Please check connection and try again.');
     }
   };
 

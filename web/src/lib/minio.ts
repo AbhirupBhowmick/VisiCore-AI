@@ -68,3 +68,15 @@ export async function getMinioObjectStream(objectName: string, offset?: number, 
   }
   return minioClient.getObject(BUCKET_NAME, cleanName);
 }
+
+export async function generatePresignedUploadUrl(objectName: string, expiresInSeconds: number = 3600): Promise<{ uploadUrl: string; objectKey: string; minioUrl: string }> {
+  const cleanKey = objectName.replace(new RegExp(`^/?${BUCKET_NAME}/?`), '').replace(/^\//, '');
+  const exists = await minioClient.bucketExists(BUCKET_NAME).catch(() => false);
+  if (!exists) {
+    await minioClient.makeBucket(BUCKET_NAME, 'us-east-1').catch(() => {});
+  }
+
+  const uploadUrl = await minioClient.presignedPutObject(BUCKET_NAME, cleanKey, expiresInSeconds);
+  const minioUrl = `/${BUCKET_NAME}/${cleanKey}`;
+  return { uploadUrl, objectKey: cleanKey, minioUrl };
+}

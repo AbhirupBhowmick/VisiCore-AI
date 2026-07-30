@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { QueryResult } from 'pg';
 import { GET as getVideosHandler } from './videos/route';
-import { POST as uploadVideoHandler } from './videos/upload/route';
+import { POST as initUploadHandler } from './videos/upload/init/route';
+import { POST as completeUploadHandler } from './videos/upload/complete/route';
 import { GET as getVideoByIdHandler, DELETE as deleteVideoByIdHandler } from './videos/[id]/route';
 import * as db from '@/lib/db';
 import * as auth from '@/lib/auth';
@@ -15,6 +16,12 @@ vi.mock('@/lib/db', () => ({
 vi.mock('@/lib/minio', () => ({
   uploadToMinio: vi.fn().mockResolvedValue('/aivideo/sample-video.mp4'),
   deleteFromMinio: vi.fn().mockResolvedValue(undefined),
+  generatePresignedUploadUrl: vi.fn().mockResolvedValue({
+    uploadUrl: 'http://localhost:9000/aivideo/uploads/test.mp4?presigned=true',
+    objectKey: 'uploads/test.mp4',
+    minioUrl: '/aivideo/uploads/test.mp4',
+  }),
+  getMinioObjectStat: vi.fn().mockResolvedValue({ size: 1024, metaData: { 'content-type': 'video/mp4' } }),
   BUCKET_NAME: 'aivideo',
 }));
 
@@ -81,38 +88,46 @@ describe('Video Route Handlers', () => {
     });
   });
 
-  describe('POST /api/videos/upload', () => {
-    it('returns 401 when unauthenticated', async () => {
-      const formData = new FormData();
-      formData.append('title', 'Demo Video');
-      const req = new Request('http://localhost:3000/api/videos/upload', {
+  describe('POST /api/videos/upload/init & complete', () => {
+    it('init returns 401 when unauthenticated', async () => {
+      const req = new Request('http://localhost:3000/api/videos/upload/init', {
         method: 'POST',
-        body: formData,
+        body: JSON.stringify({ filename: 'test.mp4', title: 'Demo Video' }),
       });
-      const res = await uploadVideoHandler(req);
+      const res = await initUploadHandler(req);
       expect(res.status).toBe(401);
     });
 
-    it('uploads video to MinIO, saves DB record, and publishes task to RabbitMQ', async () => {
-      vi.mocked(db.query).mockResolvedValueOnce(mockQueryResult([]));
-
-      const file = new File(['fake video stream'], 'test.mp4', { type: 'video/mp4' });
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('title', 'Demo Video Upload');
-
-      const req = new Request('http://localhost:3000/api/videos/upload', {
+    it('init generates presigned upload URL for authenticated user', async () => {
+      const req = new Request('http://localhost:3000/api/videos/upload/init', {
         method: 'POST',
-        headers: { Authorization: `Bearer ${validToken}` },
-        body: formData,
+        headers: { Authorization: `Bearer ${validToken}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ filename: 'test.mp4', title: 'Demo Video Upload', size: 1024 }),
       });
 
-      const res = await uploadVideoHandler(req);
+      const res = await initUploadHandler(req);
+      expect(res.status).toBe(200);
+      const json = await res.json();
+      expect(json).toHaveProperty('uploadUrl');
+      expect(json).toHaveProperty('objectKey');
+      expect(minio.generatePresignedUploadUrl).toHaveBeenCalled();
+    });
+
+    it('complete registers video record and publishes task to RabbitMQ', async () => {
+      vi.mocked(db.query).mockResolvedValueOnce(mockQueryResult([]));
+
+      const req = new Request('http://localhost:3000/api/videos/upload/complete', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${validToken}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ objectKey: 'uploads/test.mp4', minioUrl: '/aivideo/uploads/test.mp4', title: 'Demo Video Upload' }),
+      });
+
+      const res = await completeUploadHandler(req);
       expect(res.status).toBe(200);
       const json = await res.json();
       expect(json.title).toBe('Demo Video Upload');
       expect(json.status).toBe('UPLOAD_PENDING');
-      expect(minio.uploadToMinio).toHaveBeenCalled();
+      expect(minio.getMinioObjectStat).toHaveBeenCalled();
       expect(rabbitmq.publishVideoTask).toHaveBeenCalled();
     });
   });
