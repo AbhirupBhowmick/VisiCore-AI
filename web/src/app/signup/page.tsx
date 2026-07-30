@@ -4,7 +4,8 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import api from '../../lib/api';
-import { Mail, Lock, Eye, EyeOff, Video, ArrowRight, ArrowLeft, CheckCircle2, Sparkles, Cpu, Layers } from 'lucide-react';
+import Logo from '../../components/Logo';
+import { Mail, Lock, Eye, EyeOff, ArrowRight, ArrowLeft, CheckCircle2, Sparkles, Cpu, Layers } from 'lucide-react';
 
 export default function SignupPage() {
   const [email, setEmail] = useState('');
@@ -39,12 +40,8 @@ export default function SignupPage() {
           <span>Back to Home</span>
         </Link>
         
-        <Link href="/" className="inline-flex items-center gap-2.5 text-base font-semibold tracking-tight text-white">
-          <div className="w-6 h-6 rounded-md bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400">
-            <Video className="w-3.5 h-3.5" />
-          </div>
-          <span>VisiCore <span className="text-blue-400 font-mono text-[10px] px-1.5 py-0.5 rounded bg-blue-500/10 border border-blue-500/20">AI</span></span>
-        </Link>
+        {/* Authoritative Logo Component */}
+        <Logo href="/" size="md" />
       </header>
 
       {/* Main Split Screen Container */}

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { LayoutDashboard, Library, Settings, LogOut, Video, User, ShieldCheck } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
+import Logo from './Logo';
 
 const subscribe = () => () => {};
 const getSnapshot = () => true;
@@ -77,12 +78,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <div>
           {/* Logo & Brand Header */}
           <div className="h-14 px-5 flex items-center border-b border-white/[0.06]">
-            <Link href="/dashboard" className="flex items-center gap-2.5 text-sm font-semibold tracking-tight text-white group">
-              <div className="w-6 h-6 rounded-md bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400 group-hover:scale-105 transition-transform duration-150">
-                <Video className="w-3.5 h-3.5" />
-              </div>
-              <span>VisiCore <span className="text-blue-400 font-mono text-[10px] px-1 py-0.2 rounded bg-blue-500/10 border border-blue-500/20">AI</span></span>
-            </Link>
+            <Logo href="/dashboard" size="md" />
           </div>
 
           {/* Navigation Links */}
