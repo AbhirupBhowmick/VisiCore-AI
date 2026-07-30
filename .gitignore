@@ -43,3 +43,8 @@ pnpm-debug.log*
 
 # Next.js build output
 .next/
+
+# Local deployment scripts and scratch dumps
+containerapp.yaml
+deploy.sh
+*.txt
