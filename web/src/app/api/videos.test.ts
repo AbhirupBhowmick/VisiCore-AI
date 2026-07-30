@@ -14,7 +14,6 @@ vi.mock('@/lib/db', () => ({
 }));
 
 vi.mock('@/lib/minio', () => ({
-  uploadToMinio: vi.fn().mockResolvedValue('/aivideo/sample-video.mp4'),
   deleteFromMinio: vi.fn().mockResolvedValue(undefined),
   generatePresignedUploadUrl: vi.fn().mockResolvedValue({
     uploadUrl: 'http://localhost:9000/aivideo/uploads/test.mp4?presigned=true',

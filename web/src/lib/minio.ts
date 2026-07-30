@@ -35,13 +35,7 @@ export const minioClient = new MinioClient({
   secretKey,
 });
 
-export async function uploadToMinio(objectName: string, buffer: Buffer, contentType: string): Promise<string> {
-  await minioClient.putObject(BUCKET_NAME, objectName, buffer, buffer.length, {
-    'Content-Type': contentType,
-  });
 
-  return `/${BUCKET_NAME}/${objectName}`;
-}
 
 export async function deleteFromMinio(objectName: string): Promise<void> {
   try {
