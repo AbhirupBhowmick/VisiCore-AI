@@ -19,19 +19,36 @@ function getRabbitMQUrl(): string {
 export async function publishVideoTask(videoId: string, minioPath: string): Promise<boolean> {
   const rabbitUrl = getRabbitMQUrl();
   try {
+    console.log(`[RabbitMQ] Publishing RabbitMQ message for videoId: ${videoId}`);
     const conn = await amqp.connect(rabbitUrl);
-    const channel = await conn.createChannel();
+    const channel = await conn.createConfirmChannel();
     await channel.assertQueue(QUEUE_NAME, { durable: true });
 
     const payload = JSON.stringify({ videoId, minioPath });
-    const result = channel.sendToQueue(QUEUE_NAME, Buffer.from(payload), { persistent: true });
 
-    setTimeout(async () => {
-      await channel.close().catch(() => {});
-      await conn.close().catch(() => {});
-    }, 500);
+    await new Promise<void>((resolve, reject) => {
+      channel.sendToQueue(
+        QUEUE_NAME,
+        Buffer.from(payload),
+        { persistent: true },
+        (err) => {
+          if (err) {
+            console.error('[RabbitMQ] Broker failed/rejected message:', err);
+            reject(err);
+          } else {
+            console.log('[RabbitMQ] RabbitMQ broker acknowledged publish');
+            resolve();
+          }
+        }
+      );
+    });
 
-    return result;
+    console.log('[RabbitMQ] Closing RabbitMQ channel');
+    await channel.close().catch(() => {});
+    console.log('[RabbitMQ] RabbitMQ connection closed');
+    await conn.close().catch(() => {});
+
+    return true;
   } catch (err) {
     console.error('Failed to publish message to RabbitMQ:', err);
     return false;

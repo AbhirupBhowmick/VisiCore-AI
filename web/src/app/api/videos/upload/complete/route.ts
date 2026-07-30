@@ -40,6 +40,8 @@ export async function POST(request: Request) {
       );
     }
 
+    logger.info('Entering upload complete endpoint', { userId: user.id, targetKey }, reqId);
+
     const videoId = uuidv4();
     const now = new Date();
     const finalMinioUrl = providedMinioUrl || (targetKey.startsWith('/') ? targetKey : `/${targetKey}`);
@@ -48,14 +50,16 @@ export async function POST(request: Request) {
       'INSERT INTO videos (id, user_id, title, status, minio_url, created_at) VALUES ($1, $2, $3, $4, $5, $6)',
       [videoId, user.id, title.trim(), 'UPLOAD_PENDING', finalMinioUrl, now]
     );
+    logger.info('Database insert complete', { videoId }, reqId);
 
     // Enqueue for background AI analysis
+    logger.info('Publishing RabbitMQ message', { videoId, finalMinioUrl }, reqId);
     const published = await publishVideoTask(videoId, finalMinioUrl);
     if (!published) {
       logger.warn('Failed to publish task to RabbitMQ queue during upload complete', { videoId }, reqId);
     }
 
-    logger.info('Video upload completed and registered', { videoId, title: title.trim(), finalMinioUrl }, reqId);
+    logger.info('Upload complete finished', { videoId, title: title.trim(), finalMinioUrl }, reqId);
 
     const videoDto = {
       id: videoId,

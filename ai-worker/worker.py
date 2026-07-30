@@ -219,7 +219,7 @@ def process_video_task(ch, method, properties, body):
     minio_path = payload.get("minioPath")
 
     print(f"\n{'='*60}")
-    print(f"Processing video: {video_id}")
+    print(f"Worker received message: {video_id}")
     print(f"MinIO path: {minio_path}")
 
     try:
@@ -240,7 +240,9 @@ def process_video_task(ch, method, properties, body):
             print(f"  Video downloaded: {file_size_mb:.1f} MB")
 
             # Run real Gemini AI analysis
+            print("Gemini processing started")
             result = analyze_video_with_gemini(tmp_path, video_title)
+            print("Gemini processing finished")
 
         finally:
             # Always clean up temp file
@@ -262,6 +264,7 @@ def process_video_task(ch, method, properties, body):
         print(f"    Short summary:     {short_sum[:80]}…")
 
         save_results(video_id, transcript, timestamps, short_sum, detailed_sum)
+        print("Database updated")
         print(f"  ✅ Video {video_id} fully processed and saved!")
 
     except ValueError as e:
