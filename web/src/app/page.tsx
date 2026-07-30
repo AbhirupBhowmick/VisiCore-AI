@@ -69,8 +69,20 @@ export default function Page() {
         {/* SECTION 1 — HERO WITH WORKING SIDERAYS BACKGROUND */}
         <section className="relative pt-16 pb-20 md:pt-28 md:pb-24 px-6 overflow-hidden flex flex-col items-center justify-center min-h-[85vh] z-10">
           
-          {/* React Bits SideRays Component (Subtle background rays ONLY in Hero section) */}
-          <SideRays opacity={0.4} speed={0.5} rayCount={10} className="pointer-events-none" />
+          {/* React Bits SideRays Component (Subtle WebGL background rays ONLY in Hero section) */}
+          <SideRays
+            speed={2.0}
+            rayColor1="#38bdf8"
+            rayColor2="#2563eb"
+            intensity={1.2}
+            spread={1.8}
+            origin="top-right"
+            tilt={0}
+            saturation={1.2}
+            blend={0.65}
+            falloff={1.8}
+            opacity={0.4}
+          />
 
           <div className="max-w-4xl mx-auto text-center z-20 relative">
             <div className="inline-flex items-center gap-2 bg-blue-500/10 border border-blue-500/20 px-3.5 py-1 rounded-full text-xs font-medium text-blue-400 mb-6">
