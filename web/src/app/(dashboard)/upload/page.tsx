@@ -70,6 +70,43 @@ export default function UploadPage() {
     }
   };
 
+  const uploadWithRetry = async (
+    uploadUrl: string,
+    fileToUpload: File,
+    onProgress: (percent: number) => void,
+    maxRetries: number = 2
+  ) => {
+    let attempt = 0;
+    while (true) {
+      try {
+        return await axios.put(uploadUrl, fileToUpload, {
+          headers: {
+            'Content-Type': fileToUpload.type || 'video/mp4',
+          },
+          onUploadProgress: (progressEvent) => {
+            if (progressEvent.total) {
+              const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+              onProgress(percentCompleted);
+            }
+          },
+        });
+      } catch (err: unknown) {
+        const axiosErr = err as { response?: { status?: number } };
+        const status = axiosErr.response?.status;
+        // Do NOT retry 4xx client errors (400, 401, 403, 404, etc.)
+        if (status && status >= 400 && status < 500) {
+          throw err;
+        }
+        if (attempt >= maxRetries) {
+          throw err;
+        }
+        attempt++;
+        const delayMs = attempt * 1000; // Retry #1 after 1s, Retry #2 after 2s
+        await new Promise((resolve) => setTimeout(resolve, delayMs));
+      }
+    }
+  };
+
   const uploadFile = async (e: React.MouseEvent) => {
     e.stopPropagation(); // Avoid triggering file selection dialog
     if (!file) return;
@@ -88,18 +125,8 @@ export default function UploadPage() {
 
       const { uploadUrl, objectKey, minioUrl } = initResponse.data;
 
-      // Step 2: Upload file bytes DIRECTLY to Cloudflare R2 / MinIO (bypasses Vercel 413 Payload Too Large limits)
-      await axios.put(uploadUrl, file, {
-        headers: {
-          'Content-Type': file.type || 'video/mp4',
-        },
-        onUploadProgress: (progressEvent) => {
-          if (progressEvent.total) {
-            const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-            setUploadProgress(percentCompleted);
-          }
-        }
-      });
+      // Step 2: Upload file bytes DIRECTLY with transient failure retry support
+      await uploadWithRetry(uploadUrl, file, (percent) => setUploadProgress(percent));
 
       // Step 3: Complete upload and register video record in database & RabbitMQ queue
       await api.post('/api/videos/upload/complete', {

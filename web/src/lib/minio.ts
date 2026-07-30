@@ -36,11 +36,6 @@ export const minioClient = new MinioClient({
 });
 
 export async function uploadToMinio(objectName: string, buffer: Buffer, contentType: string): Promise<string> {
-  const exists = await minioClient.bucketExists(BUCKET_NAME).catch(() => false);
-  if (!exists) {
-    await minioClient.makeBucket(BUCKET_NAME, 'us-east-1').catch(() => {});
-  }
-
   await minioClient.putObject(BUCKET_NAME, objectName, buffer, buffer.length, {
     'Content-Type': contentType,
   });
@@ -71,11 +66,6 @@ export async function getMinioObjectStream(objectName: string, offset?: number, 
 
 export async function generatePresignedUploadUrl(objectName: string, expiresInSeconds: number = 3600): Promise<{ uploadUrl: string; objectKey: string; minioUrl: string }> {
   const cleanKey = objectName.replace(new RegExp(`^/?${BUCKET_NAME}/?`), '').replace(/^\//, '');
-  const exists = await minioClient.bucketExists(BUCKET_NAME).catch(() => false);
-  if (!exists) {
-    await minioClient.makeBucket(BUCKET_NAME, 'us-east-1').catch(() => {});
-  }
-
   const uploadUrl = await minioClient.presignedPutObject(BUCKET_NAME, cleanKey, expiresInSeconds);
   const minioUrl = `/${BUCKET_NAME}/${cleanKey}`;
   return { uploadUrl, objectKey: cleanKey, minioUrl };
