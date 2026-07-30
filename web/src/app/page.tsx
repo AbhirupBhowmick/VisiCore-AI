@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { 
   ArrowRight, Video, Search, Layers, Cpu, Sparkles, CheckCircle2, 
@@ -8,7 +8,7 @@ import {
   Clock, Activity, ChevronRight
 } from 'lucide-react';
 import ShapeGrid from '@/components/ShapeGrid';
-import SideRays from '@/components/SideRays';
+import Aurora from '@/components/Aurora';
 import Logo from '@/components/Logo';
 import AIPipelineShowcase from '@/components/AIPipelineShowcase';
 
@@ -66,22 +66,15 @@ export default function Page() {
       {/* Main Content Area */}
       <main className="flex-grow pt-14">
         
-        {/* SECTION 1 — HERO WITH WORKING SIDERAYS BACKGROUND */}
+        {/* SECTION 1 — HERO WITH REACT BITS AURORA BACKGROUND */}
         <section className="relative pt-16 pb-20 md:pt-28 md:pb-24 px-6 overflow-hidden flex flex-col items-center justify-center min-h-[85vh] z-10">
           
-          {/* React Bits SideRays Component (Subtle WebGL background rays ONLY in Hero section) */}
-          <SideRays
-            speed={2.0}
-            rayColor1="#38bdf8"
-            rayColor2="#2563eb"
-            intensity={1.2}
-            spread={1.8}
-            origin="top-right"
-            tilt={0}
-            saturation={1.2}
-            blend={0.65}
-            falloff={1.8}
-            opacity={0.4}
+          {/* React Bits Aurora Component (Subtle WebGL background ONLY in Hero section) */}
+          <Aurora
+            colorStops={["#0284c7", "#2563eb", "#050507"]}
+            blend={0.8}
+            amplitude={1.0}
+            speed={0.6}
           />
 
           <div className="max-w-4xl mx-auto text-center z-20 relative">
