@@ -5,7 +5,8 @@ import { useParams, useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import api from '../../../../lib/api';
 import { useAuthStore } from '../../../../store/authStore';
-import { Sparkles, FileText, Bot, Clock, PlayCircle, Send, User, Zap, Trash2 } from 'lucide-react';
+import { Sparkles, FileText, Bot, Clock, PlayCircle, Send, User, Zap, Trash2, ArrowLeft, CheckCircle2 } from 'lucide-react';
+import Link from 'next/link';
 
 interface Timestamp {
   start: number;
@@ -87,16 +88,18 @@ export default function VideoDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-[80vh]">
-        <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+      <div className="flex flex-col items-center justify-center min-h-[50vh] gap-3 font-sans">
+        <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+        <div className="text-gray-400 text-xs font-mono tracking-wider">Loading Video Workspace...</div>
       </div>
     );
   }
 
   if (error || !video) {
     return (
-      <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-6 rounded-xl">
-        Failed to load video details.
+      <div className="bg-rose-500/10 border border-rose-500/30 text-rose-300 p-5 rounded-xl text-xs font-sans flex items-center justify-between">
+        <span>Failed to load video details. The video asset may have been removed.</span>
+        <Link href="/videos" className="text-white hover:underline font-medium">Return to Library</Link>
       </div>
     );
   }
@@ -126,9 +129,9 @@ export default function VideoDetailPage() {
           <button
             key={idx}
             onClick={() => seekTo(totalSeconds)}
-            className="inline-flex items-center gap-1 mx-1 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 text-[11px] font-mono text-blue-400 px-2 py-0.5 rounded-md transition-all active:scale-95 cursor-pointer align-middle"
+            className="inline-flex items-center gap-1 mx-1 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 text-[10px] font-mono text-blue-400 px-1.5 py-0.5 rounded transition-all active:scale-95 cursor-pointer align-middle"
           >
-            <PlayCircle className="w-3.5 h-3.5 text-blue-400" />
+            <PlayCircle className="w-3 h-3 text-blue-400" />
             {match[1]}:{match[2]}
           </button>
         );
@@ -169,7 +172,6 @@ export default function VideoDetailPage() {
       const response = await api.post(`/api/videos/${id}/chat`, { message: userText });
       const aiReply = response.data.reply;
 
-      // Extract first timestamp match if present in reply text
       const timeMatch = aiReply.match(/\[(\d+):(\d+)\]/);
       let targetTime: number | undefined = undefined;
       if (timeMatch) {
@@ -193,267 +195,264 @@ export default function VideoDetailPage() {
   };
 
   return (
-    <div className="h-[calc(100vh-8rem)] flex flex-col lg:flex-row gap-6 pb-6 font-sans">
+    <div className="space-y-6 font-sans">
       
-      {/* LEFT COLUMN: Video & Chat */}
-      <div className="flex-1 flex flex-col gap-6 h-full overflow-hidden">
-        {/* Video Player Container */}
-        <div className="bg-[#141414] border border-[#262626] rounded-2xl overflow-hidden shadow-lg flex-shrink-0 flex flex-col max-h-[50%]">
-          <video 
-            ref={videoRef}
-            src={getVideoStreamUrl()} 
-            controls 
-            className="w-full h-full max-h-[260px] md:max-h-[300px] bg-black object-contain cursor-pointer"
-            poster="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' fill='%23141414'%3E%3Crect width='100' height='100'/%3E%3C/svg%3E"
-          >
-            Your browser does not support the video tag.
-          </video>
-          <div className="p-4 border-t border-[#262626] bg-[#0A0A0A] flex justify-between items-center">
-             <div className="min-w-0">
-               <h1 className="text-base font-bold text-white truncate">{video.title}</h1>
-               <div className="flex items-center gap-3 mt-1.5 text-xs text-gray-400">
-                 <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> {new Date(video.createdAt).toLocaleDateString()}</span>
-                 <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border
-                    ${video.status === 'COMPLETED' ? 'bg-green-500/10 text-green-500 border-green-500/20' : 
-                      video.status === 'FAILED' ? 'bg-red-500/10 text-red-500 border-red-500/20' : 
-                      'bg-yellow-500/10 text-yellow-500 border-yellow-500/20'}
-                 `}>
-                   {video.status}
-                 </span>
-               </div>
-             </div>
-
-             {/* Delete Button */}
-             <button
-               onClick={handleDeleteVideo}
-               className="flex items-center gap-1.5 px-3 py-2 bg-red-500/10 hover:bg-red-600 border border-red-500/20 hover:border-red-500 text-red-400 hover:text-white rounded-xl text-xs font-semibold transition-all active:scale-95 cursor-pointer ml-4"
-             >
-               <Trash2 className="w-3.5 h-3.5" />
-               <span>Delete Video</span>
-             </button>
+      {/* Top Header Navigation */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/[0.06]">
+        <div className="flex items-center gap-3">
+          <Link href="/videos" className="w-8 h-8 rounded-lg bg-[#141418] hover:bg-[#1c1c22] border border-white/[0.08] flex items-center justify-center text-gray-400 hover:text-white transition-all cursor-pointer">
+            <ArrowLeft className="w-4 h-4" />
+          </Link>
+          <div>
+            <h1 className="text-lg font-bold text-white tracking-tight truncate max-w-xl">{video.title}</h1>
+            <p className="text-xs text-gray-400 flex items-center gap-2 mt-0.5">
+              <span>Added {new Date(video.createdAt).toLocaleDateString()}</span>
+              <span>•</span>
+              <span className="font-mono text-[10px] uppercase text-blue-400">{video.status}</span>
+            </p>
           </div>
         </div>
 
-        {/* AI Copilot Chat */}
-        <div className="flex-1 bg-[#141414] border border-[#262626] rounded-2xl p-5 flex flex-col shadow-lg overflow-hidden relative">
-          <div className="flex items-center gap-3 mb-4 border-b border-[#262626] pb-3 flex-shrink-0">
-             <div className="w-8 h-8 rounded-full bg-blue-500/10 flex items-center justify-center border border-blue-500/20">
-               <Bot className="w-4 h-4 text-blue-500" />
-             </div>
-             <div className="flex flex-col">
-               <div className="flex items-center gap-2">
-                 <h2 className="text-sm font-bold text-white">VisiCore AI Copilot</h2>
-                 <span className="px-1.5 py-0.5 rounded bg-blue-500/10 text-[9px] font-extrabold text-blue-400 border border-blue-500/20 uppercase tracking-wider">Gemma 4</span>
-               </div>
-               <span className="text-[10px] text-green-500 flex items-center gap-1.5"><span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-ping"></span> Active Session Context</span>
-             </div>
-          </div>
+        <button
+          onClick={handleDeleteVideo}
+          className="h-8 px-3 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 text-rose-400 hover:text-rose-300 rounded-lg text-xs font-medium transition-all active:scale-95 cursor-pointer flex items-center gap-1.5 self-start sm:self-auto"
+        >
+          <Trash2 className="w-3.5 h-3.5" />
+          <span>Delete Video</span>
+        </button>
+      </div>
+
+      {/* Main Grid Layout: Video + Copilot Chat & Insights Panel */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 min-h-[600px]">
+        
+        {/* Left Column: Player & Copilot */}
+        <div className="lg:col-span-7 flex flex-col space-y-6">
           
-          <div className="flex-1 overflow-y-auto mb-4 space-y-4 pr-2 scrollbar-thin scrollbar-thumb-gray-800">
-             {messages.map((msg, index) => (
-               <div 
-                 key={index} 
-                 className={`flex gap-3 max-w-[85%] ${msg.sender === 'user' ? 'ml-auto flex-row-reverse' : ''}`}
-               >
-                 {msg.sender === 'ai' ? (
-                   <div className="w-7 h-7 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                     <Bot className="w-3.5 h-3.5 text-blue-400" />
-                   </div>
-                 ) : (
-                   <div className="w-7 h-7 rounded-lg bg-gray-800 border border-gray-700 flex items-center justify-center flex-shrink-0 mt-0.5">
-                     <User className="w-3.5 h-3.5 text-gray-300" />
-                   </div>
-                 )}
-                 <div className="flex flex-col gap-1.5">
-                   <div className={`p-3.5 rounded-2xl text-xs leading-relaxed shadow-sm
-                     ${msg.sender === 'user' ? 
-                       'bg-blue-600 text-white rounded-tr-none' : 
-                       'bg-[#1a1a1a] border border-[#262626] text-gray-300 rounded-tl-none'
-                     }
-                   `}>
+          {/* Video Player */}
+          <div className="bg-[#0a0a0c] border border-white/[0.08] rounded-xl overflow-hidden shadow-lg flex flex-col">
+            <video 
+              ref={videoRef}
+              src={getVideoStreamUrl()} 
+              controls 
+              className="w-full aspect-video bg-black object-contain cursor-pointer"
+              poster="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' fill='%230a0a0c'%3E%3Crect width='100' height='100'/%3E%3C/svg%3E"
+            >
+              Your browser does not support HTML5 video streaming.
+            </video>
+          </div>
+
+          {/* AI Copilot Panel */}
+          <div className="bg-[#0a0a0c] border border-white/[0.08] rounded-xl p-4 flex flex-col flex-1 shadow-lg relative min-h-[350px]">
+            <div className="flex items-center justify-between pb-3 border-b border-white/[0.06] mb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-6 h-6 rounded-md bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
+                  <Bot className="w-3.5 h-3.5" />
+                </div>
+                <h2 className="text-xs font-semibold text-white">VisiCore Copilot</h2>
+              </div>
+              <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded">
+                Gemini 3.6 Active
+              </span>
+            </div>
+
+            <div className="flex-1 overflow-y-auto space-y-3 pr-1 max-h-[300px] text-xs">
+              {messages.map((msg, index) => (
+                <div 
+                  key={index} 
+                  className={`flex gap-2.5 max-w-[90%] ${msg.sender === 'user' ? 'ml-auto flex-row-reverse' : ''}`}
+                >
+                  {msg.sender === 'ai' ? (
+                    <div className="w-5 h-5 rounded bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 flex-shrink-0 mt-0.5">
+                      <Bot className="w-3 h-3" />
+                    </div>
+                  ) : (
+                    <div className="w-5 h-5 rounded bg-white/[0.1] flex items-center justify-center text-gray-300 flex-shrink-0 mt-0.5">
+                      <User className="w-3 h-3" />
+                    </div>
+                  )}
+
+                  <div className="space-y-1">
+                    <div className={`p-3 rounded-lg text-xs leading-relaxed ${
+                      msg.sender === 'user'
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-[#141418] border border-white/[0.06] text-gray-200'
+                    }`}>
                       {msg.text.split('\n').map((line, lIdx) => (
-                        <p key={lIdx} className={line ? 'mb-1 last:mb-0' : 'h-2'}>
+                        <p key={lIdx} className={line ? 'mb-1 last:mb-0' : 'h-1'}>
                           {renderMessageText(line)}
                         </p>
                       ))}
-                   </div>
-                   
-                   {msg.timestamp !== undefined && (
-                     <button 
-                       onClick={() => seekTo(msg.timestamp!)}
-                       className="self-start flex items-center gap-1.5 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 text-[10px] font-mono text-blue-400 px-2.5 py-1 rounded-lg transition-all active:scale-95 cursor-pointer mt-0.5"
-                     >
-                       <PlayCircle className="w-3.5 h-3.5" /> Jump to Moment ({formatTime(msg.timestamp)})
-                     </button>
-                   )}
-                 </div>
-               </div>
-             ))}
+                    </div>
 
-             {isTyping && (
-               <div className="flex gap-3 max-w-[85%]">
-                 <div className="w-7 h-7 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                   <Bot className="w-3.5 h-3.5 text-blue-400" />
-                 </div>
-                 <div className="bg-[#1a1a1a] border border-[#262626] p-3.5 rounded-2xl rounded-tl-none shadow-sm flex items-center gap-1.5">
-                   <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
-                   <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
-                   <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
-                 </div>
-               </div>
-             )}
+                    {msg.timestamp !== undefined && (
+                      <button 
+                        onClick={() => seekTo(msg.timestamp!)}
+                        className="flex items-center gap-1 text-[10px] font-mono text-blue-400 hover:text-blue-300 transition-colors"
+                      >
+                        <PlayCircle className="w-3 h-3" /> Jump to {formatTime(msg.timestamp)}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
 
-             <div ref={chatEndRef} />
-             
-             {/* Disabled Overlay if not completed */}
-             {video.status !== 'COMPLETED' && (
-               <div className="absolute inset-0 top-[60px] bg-[#141414]/85 backdrop-blur-sm flex items-center justify-center z-10">
-                 <div className="flex flex-col items-center bg-[#0A0A0A] border border-[#262626] p-6 rounded-xl shadow-2xl">
-                   <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mb-3"></div>
-                   <p className="text-white font-medium text-sm">Analyzing video context...</p>
-                   <p className="text-[10px] text-gray-400 mt-1">Copilot will be active once pipeline completes.</p>
-                 </div>
-               </div>
-             )}
+              {isTyping && (
+                <div className="flex gap-2 items-center text-xs text-gray-400">
+                  <div className="w-5 h-5 rounded bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
+                    <Bot className="w-3 h-3 animate-spin" />
+                  </div>
+                  <span>Copilot analyzing query...</span>
+                </div>
+              )}
+              <div ref={chatEndRef} />
+            </div>
+
+            <form onSubmit={handleSendMessage} className="mt-3 relative flex items-center">
+              <input 
+                type="text" 
+                value={inputMessage}
+                onChange={(e) => setInputMessage(e.target.value)}
+                placeholder={video.status === 'COMPLETED' ? "Ask anything about this video..." : "Waiting for analysis..."}
+                disabled={video.status !== 'COMPLETED'}
+                className="w-full bg-[#0d0d10] border border-white/[0.08] focus:border-blue-500/80 focus:ring-1 focus:ring-blue-500/50 text-white rounded-lg pl-3.5 pr-10 py-2 text-xs placeholder-gray-600 transition-all outline-none"
+              />
+              <button 
+                type="submit"
+                disabled={video.status !== 'COMPLETED' || !inputMessage.trim()}
+                className="absolute right-2 p-1 bg-blue-600 hover:bg-blue-500 text-white disabled:bg-transparent disabled:text-gray-600 rounded transition-colors"
+              >
+                <Send className="w-3.5 h-3.5" />
+              </button>
+            </form>
+          </div>
+        </div>
+
+        {/* Right Column: Insights & Transcript Tabs */}
+        <div className="lg:col-span-5 bg-[#0a0a0c] border border-white/[0.08] rounded-xl overflow-hidden shadow-lg flex flex-col">
+          {/* Tabs Navigation */}
+          <div className="flex border-b border-white/[0.06] bg-[#070709]">
+            <button 
+              onClick={() => setActiveTab('transcript')}
+              className={`flex-1 py-3 text-xs font-medium transition-colors border-b-2 ${
+                activeTab === 'transcript'
+                  ? 'border-blue-500 text-white bg-white/[0.03]'
+                  : 'border-transparent text-gray-400 hover:text-gray-200'
+              }`}
+            >
+              Transcript
+            </button>
+            <button 
+              onClick={() => setActiveTab('summary')}
+              className={`flex-1 py-3 text-xs font-medium transition-colors border-b-2 ${
+                activeTab === 'summary'
+                  ? 'border-blue-500 text-white bg-white/[0.03]'
+                  : 'border-transparent text-gray-400 hover:text-gray-200'
+              }`}
+            >
+              Summary
+            </button>
+            <button 
+              onClick={() => setActiveTab('highlights')}
+              className={`flex-1 py-3 text-xs font-medium transition-colors border-b-2 ${
+                activeTab === 'highlights'
+                  ? 'border-blue-500 text-white bg-white/[0.03]'
+                  : 'border-transparent text-gray-400 hover:text-gray-200'
+              }`}
+            >
+              Highlights
+            </button>
           </div>
 
-          <form onSubmit={handleSendMessage} className="relative flex items-center mt-auto flex-shrink-0">
-             <input 
-               type="text" 
-               value={inputMessage}
-               onChange={(e) => setInputMessage(e.target.value)}
-               placeholder={video.status === 'COMPLETED' ? "Ask about this video..." : "Waiting for analysis pipeline..."}
-               disabled={video.status !== 'COMPLETED'}
-               className="w-full bg-[#050505] border border-[#222] text-xs text-white rounded-xl pl-4 pr-12 py-3.5 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 disabled:opacity-40 transition-all placeholder-gray-600"
-             />
-             <button 
-               type="submit"
-               disabled={video.status !== 'COMPLETED' || !inputMessage.trim()}
-               className="absolute right-2.5 p-2 bg-blue-600 hover:bg-blue-500 disabled:bg-[#141414] text-white disabled:text-gray-600 rounded-lg transition-all active:scale-95 flex items-center justify-center cursor-pointer disabled:cursor-not-allowed border-none outline-none"
-             >
-               <Send className="w-3.5 h-3.5" />
-             </button>
-          </form>
-        </div>
-      </div>
-
-      {/* RIGHT COLUMN: Insights Panel */}
-      <div className="w-full lg:w-[400px] xl:w-[450px] bg-[#141414] border border-[#262626] rounded-2xl flex flex-col shadow-lg overflow-hidden h-full flex-shrink-0">
-        {/* Tabs */}
-        <div className="flex border-b border-[#262626] bg-[#0A0A0A] flex-shrink-0">
-          <button 
-            onClick={() => setActiveTab('transcript')}
-            className={`flex-1 py-4 text-xs font-semibold uppercase tracking-wider transition-colors border-b-2 ${activeTab === 'transcript' ? 'border-blue-500 text-blue-500 bg-[#141414]' : 'border-transparent text-gray-400 hover:text-gray-200 hover:bg-[#141414]'}`}
-          >
-            Transcript
-          </button>
-          <button 
-            onClick={() => setActiveTab('summary')}
-            className={`flex-1 py-4 text-xs font-semibold uppercase tracking-wider transition-colors border-b-2 ${activeTab === 'summary' ? 'border-blue-500 text-blue-500 bg-[#141414]' : 'border-transparent text-gray-400 hover:text-gray-200 hover:bg-[#141414]'}`}
-          >
-            Summary
-          </button>
-          <button 
-            onClick={() => setActiveTab('highlights')}
-            className={`flex-1 py-4 text-xs font-semibold uppercase tracking-wider transition-colors border-b-2 ${activeTab === 'highlights' ? 'border-blue-500 text-blue-500 bg-[#141414]' : 'border-transparent text-gray-400 hover:text-gray-200 hover:bg-[#141414]'}`}
-          >
-            Highlights
-          </button>
-        </div>
-
-        {/* Content Area */}
-        <div className="flex-1 overflow-y-auto p-5 relative">
-           {video.status !== 'COMPLETED' ? (
-              <div className="h-full flex flex-col items-center justify-center text-center px-4 py-8">
-                 <div className="w-16 h-16 bg-[#1a1a1a] rounded-full flex items-center justify-center border border-[#262626] mb-4">
-                   <FileText className="w-8 h-8 text-gray-500 animate-pulse" />
-                 </div>
-                 <h3 className="text-sm font-bold text-white mb-1.5">Processing Insights</h3>
-                 <p className="text-xs text-gray-400 max-w-[240px] leading-relaxed">Our neural pipeline is currently analyzing this video to extract the transcript and generate smart summaries.</p>
+          {/* Tab Content Body */}
+          <div className="p-4 flex-1 overflow-y-auto max-h-[600px] text-xs">
+            {video.status !== 'COMPLETED' ? (
+              <div className="h-full flex flex-col items-center justify-center text-center p-8">
+                <div className="w-10 h-10 bg-blue-500/10 rounded-xl flex items-center justify-center border border-blue-500/20 mb-3">
+                  <Clock className="w-5 h-5 text-blue-400 animate-spin" />
+                </div>
+                <h4 className="text-xs font-semibold text-white mb-1">Analyzing Media Content</h4>
+                <p className="text-[11px] text-gray-400 leading-relaxed">Transcripts and smart summaries will appear automatically once Gemini processing completes.</p>
               </div>
-           ) : (
-             <div className="h-full">
-               {activeTab === 'transcript' && (
-                 <div className="space-y-2">
-                   {parsedTimestamps.length > 0 ? (
-                     parsedTimestamps.map((ts, idx) => (
-                       <div 
-                         key={idx} 
-                         onClick={() => seekTo(ts.start)}
-                         className="flex gap-4 p-3 hover:bg-[#1a1a1a] rounded-xl transition-colors cursor-pointer group border border-transparent hover:border-[#262626]"
-                       >
-                          <span className="text-xs font-mono text-blue-500 mt-1 whitespace-nowrap bg-blue-500/10 px-2 py-0.5 rounded flex items-center gap-1 self-start">
-                            <PlayCircle className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+            ) : (
+              <div>
+                {activeTab === 'transcript' && (
+                  <div className="space-y-2">
+                    {parsedTimestamps.length > 0 ? (
+                      parsedTimestamps.map((ts, idx) => (
+                        <div 
+                          key={idx} 
+                          onClick={() => seekTo(ts.start)}
+                          className="flex gap-3 p-2.5 hover:bg-white/[0.04] rounded-lg transition-colors cursor-pointer border border-transparent hover:border-white/[0.06] group"
+                        >
+                          <span className="text-[10px] font-mono text-blue-400 bg-blue-500/10 border border-blue-500/20 px-1.5 py-0.5 rounded self-start mt-0.5">
                             {formatTime(ts.start)}
                           </span>
                           <p className="text-xs text-gray-300 leading-relaxed group-hover:text-white transition-colors">{ts.text}</p>
-                       </div>
-                     ))
-                   ) : (
-                     <p className="text-gray-400 text-xs p-3 leading-relaxed bg-[#1a1a1a] rounded-xl border border-[#262626]">{video.transcript?.content || "No transcript available."}</p>
-                   )}
-                 </div>
-               )}
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-xs text-gray-400 p-3 bg-[#141418] rounded-lg border border-white/[0.06]">
+                        {video.transcript?.content || "No transcript available for this video."}
+                      </p>
+                    )}
+                  </div>
+                )}
 
-               {activeTab === 'summary' && (
-                 <div className="space-y-6">
+                {activeTab === 'summary' && (
+                  <div className="space-y-4">
                     <div>
-                      <h4 className="text-xs font-bold text-blue-500 uppercase tracking-wider mb-3 flex items-center gap-2">
-                        <Sparkles className="w-3.5 h-3.5 animate-pulse" /> TL;DR
+                      <h4 className="text-xs font-semibold text-blue-400 mb-2 flex items-center gap-1.5">
+                        <Sparkles className="w-3.5 h-3.5" /> TL;DR Executive Summary
                       </h4>
-                      <div className="bg-blue-500/5 border border-blue-500/20 p-4 rounded-xl text-xs text-blue-50 leading-relaxed shadow-inner">
+                      <div className="bg-blue-500/10 border border-blue-500/20 p-3.5 rounded-lg text-xs text-blue-100 leading-relaxed">
                         {video.summary?.shortSummary || "No short summary available."}
                       </div>
                     </div>
+
                     <div>
-                      <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Detailed Notes</h4>
-                      <div className="bg-[#1a1a1a] border border-[#262626] p-4 rounded-xl text-xs text-gray-300 leading-relaxed space-y-4">
-                        <p>{video.summary?.detailedSummary || "No detailed summary available."}</p>
+                      <h4 className="text-xs font-semibold text-gray-300 mb-2">Detailed Analysis</h4>
+                      <div className="bg-[#141418] border border-white/[0.06] p-3.5 rounded-lg text-xs text-gray-300 leading-relaxed">
+                        {video.summary?.detailedSummary || "No detailed summary available."}
                       </div>
                     </div>
-                 </div>
-               )}
+                  </div>
+                )}
 
-               {activeTab === 'highlights' && (
-                 <div className="space-y-4">
-                   <h4 className="text-xs font-bold text-blue-400 uppercase tracking-wider mb-2 flex items-center gap-2">
-                     <Zap className="w-3.5 h-3.5 animate-pulse text-blue-400" /> AI Key Scenes Detect
-                   </h4>
-                   {parsedTimestamps.length > 0 ? (
-                     <div className="space-y-3">
-                       {parsedTimestamps.slice(0, 3).map((ts, idx) => (
-                         <div 
-                           key={idx} 
-                           onClick={() => seekTo(ts.start)}
-                           className="bg-[#1a1a1a] border border-[#262626] hover:border-blue-500/50 p-4 rounded-xl transition-all cursor-pointer group flex items-start gap-4 hover:shadow-[0_0_15px_rgba(59,130,246,0.05)] active:scale-[0.99]"
-                         >
-                           <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-400 flex-shrink-0 group-hover:bg-blue-500 group-hover:text-white transition-colors duration-200">
-                             <PlayCircle className="w-5 h-5" />
-                           </div>
-                           <div className="flex-1 min-w-0">
-                             <div className="flex justify-between items-center mb-1">
-                               <span className="text-xs font-semibold text-white group-hover:text-blue-400 transition-colors">Scene Highlight #{idx + 1}</span>
-                               <span className="text-[10px] font-mono text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded">{formatTime(ts.start)}</span>
-                             </div>
-                             <p className="text-[11px] text-gray-400 leading-relaxed truncate">{ts.text}</p>
-                           </div>
-                         </div>
-                       ))}
-                     </div>
-                   ) : (
-                     <div className="flex flex-col items-center justify-center py-12 text-center">
-                       <Sparkles className="w-12 h-12 text-gray-600 mb-4" />
-                       <h4 className="text-white font-medium mb-1">No Highlights Yet</h4>
-                       <p className="text-sm text-gray-400 max-w-[200px]">Waiting for transcription data to isolate highlight moments.</p>
-                     </div>
-                   )}
-                 </div>
-               )}
-             </div>
-           )}
+                {activeTab === 'highlights' && (
+                  <div className="space-y-3">
+                    <h4 className="text-xs font-semibold text-blue-400 mb-2 flex items-center gap-1.5">
+                      <Zap className="w-3.5 h-3.5 text-blue-400" /> Key Scene Highlights
+                    </h4>
+                    {parsedTimestamps.length > 0 ? (
+                      parsedTimestamps.slice(0, 4).map((ts, idx) => (
+                        <div 
+                          key={idx} 
+                          onClick={() => seekTo(ts.start)}
+                          className="p-3 bg-[#141418] border border-white/[0.06] hover:border-blue-500/40 rounded-lg transition-all cursor-pointer group flex items-start gap-3"
+                        >
+                          <div className="w-7 h-7 rounded bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 flex-shrink-0 mt-0.5">
+                            <PlayCircle className="w-4 h-4" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="text-xs font-medium text-white group-hover:text-blue-400 transition-colors">Key Moment #{idx + 1}</span>
+                              <span className="text-[10px] font-mono text-blue-400">{formatTime(ts.start)}</span>
+                            </div>
+                            <p className="text-[11px] text-gray-400 truncate">{ts.text}</p>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-xs text-gray-400">No highlights detected.</p>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
-      </div>
 
+      </div>
     </div>
   );
 }

@@ -3,7 +3,7 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import api from '../../../lib/api';
-import { PlayCircle, Clock, CheckCircle, AlertCircle, FileVideo, UploadCloud, ChevronRight, Activity, Calendar } from 'lucide-react';
+import { PlayCircle, Clock, CheckCircle2, AlertCircle, FileVideo, UploadCloud, ChevronRight, Activity, Calendar, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 
 interface VideoItem {
@@ -29,21 +29,21 @@ export default function DashboardPage() {
     switch (status) {
       case 'COMPLETED':
         return (
-          <span className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-green-500/10 text-green-400 border border-green-500/20">
-            <CheckCircle className="w-3.5 h-3.5" /> Completed
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-[11px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+            <CheckCircle2 className="w-3 h-3 text-emerald-400" /> Ready
           </span>
         );
       case 'PROCESSING':
       case 'UPLOAD_PENDING':
         return (
-          <span className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/20 animate-pulse">
-            <Clock className="w-3.5 h-3.5 animate-spin" style={{ animationDuration: '3s' }} /> Processing
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-[11px] font-medium bg-blue-500/10 text-blue-400 border border-blue-500/20">
+            <Clock className="w-3 h-3 animate-spin text-blue-400" style={{ animationDuration: '2s' }} /> Processing
           </span>
         );
       case 'FAILED':
         return (
-          <span className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-red-500/10 text-red-400 border border-red-500/20">
-            <AlertCircle className="w-3.5 h-3.5" /> Failed
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-[11px] font-medium bg-rose-500/10 text-rose-400 border border-rose-500/20">
+            <AlertCircle className="w-3 h-3 text-rose-400" /> Failed
           </span>
         );
     }
@@ -51,20 +51,20 @@ export default function DashboardPage() {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center h-[50vh] gap-4">
-        <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-        <div className="text-gray-400 text-sm font-mono tracking-widest uppercase">Fetching workspace assets...</div>
+      <div className="flex flex-col items-center justify-center min-h-[45vh] gap-3">
+        <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+        <div className="text-gray-400 text-xs font-mono tracking-wider">Syncing Video Assets...</div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="bg-red-500/10 border border-red-500/30 text-red-400 p-6 rounded-2xl flex items-center gap-3">
-        <AlertCircle className="w-6 h-6 flex-shrink-0" />
+      <div className="bg-rose-500/10 border border-rose-500/30 text-rose-300 p-5 rounded-xl flex items-center gap-3">
+        <AlertCircle className="w-5 h-5 flex-shrink-0 text-rose-400" />
         <div>
-          <h3 className="font-semibold text-white">System Connectivity Issue</h3>
-          <p className="text-sm text-gray-400 mt-1">Failed to communicate with REST API. Please ensure the backend is healthy.</p>
+          <h3 className="text-xs font-semibold text-white">API Connection Error</h3>
+          <p className="text-xs text-gray-400 mt-0.5">Failed to synchronize with backend services. Please check network connectivity.</p>
         </div>
       </div>
     );
@@ -73,72 +73,94 @@ export default function DashboardPage() {
   const sortedVideos = videos?.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()) || [];
 
   return (
-    <div className="pb-12 font-sans">
+    <div className="space-y-8 font-sans">
       
-      {/* Header and Action */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
+      {/* Top Header Banner */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-white/[0.06]">
         <div>
-          <div className="flex items-center gap-2 text-xs font-bold text-blue-500 uppercase tracking-widest mb-1.5">
-            <Activity className="w-3.5 h-3.5" /> Video Library
+          <div className="flex items-center gap-2 text-xs font-medium text-blue-400 mb-1">
+            <Activity className="w-3.5 h-3.5" /> Live Workspace Pipeline
           </div>
-          <h1 className="text-3xl font-bold text-white mb-2 tracking-tight">Your Workspace</h1>
-          <p className="text-gray-400 text-sm">Manage, review, and query deep intelligence from your processed footage.</p>
+          <h1 className="text-2xl font-bold text-white tracking-tight">Video Dashboard</h1>
+          <p className="text-xs text-gray-400 mt-0.5">Monitor processing state, transcripts, and Gemini AI analysis.</p>
         </div>
-        <Link href="/upload" className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-medium transition-all shadow-[0_0_15px_rgba(37,99,235,0.3)] hover:shadow-[0_0_25px_rgba(37,99,235,0.5)] flex items-center justify-center gap-2 group self-start md:self-auto">
-          <UploadCloud className="w-5 h-5" />
-          <span>Upload New Video</span>
-          <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+        
+        <Link 
+          href="/upload" 
+          className="h-9 px-4 bg-blue-600 hover:bg-blue-500 text-white font-medium text-xs rounded-lg transition-all duration-150 shadow-[0_0_12px_rgba(37,99,235,0.3)] hover:shadow-[0_0_18px_rgba(37,99,235,0.5)] active:scale-[0.98] inline-flex items-center justify-center gap-2 group cursor-pointer self-start sm:self-auto"
+        >
+          <UploadCloud className="w-4 h-4" />
+          <span>Upload Video</span>
+          <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
         </Link>
       </div>
 
+      {/* Metrics Row */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="bg-[#0a0a0c] border border-white/[0.08] p-4 rounded-xl">
+          <p className="text-[11px] font-medium text-gray-400">Total Asset Collection</p>
+          <p className="text-2xl font-bold text-white mt-1 tracking-tight">{sortedVideos.length}</p>
+        </div>
+        
+        <div className="bg-[#0a0a0c] border border-white/[0.08] p-4 rounded-xl">
+          <p className="text-[11px] font-medium text-gray-400">Completed Analyses</p>
+          <p className="text-2xl font-bold text-emerald-400 mt-1 tracking-tight">
+            {sortedVideos.filter(v => v.status === 'COMPLETED').length}
+          </p>
+        </div>
+
+        <div className="bg-[#0a0a0c] border border-white/[0.08] p-4 rounded-xl">
+          <p className="text-[11px] font-medium text-gray-400">Active Queue Pipeline</p>
+          <p className="text-2xl font-bold text-blue-400 mt-1 tracking-tight">
+            {sortedVideos.filter(v => v.status === 'PROCESSING' || v.status === 'UPLOAD_PENDING').length}
+          </p>
+        </div>
+      </div>
+
+      {/* Main Video Collection Grid */}
       {sortedVideos.length === 0 ? (
-        <div className="bg-[#0A0A0A] border border-[#262626] rounded-2xl p-16 text-center flex flex-col items-center shadow-lg relative overflow-hidden group">
-          <div className="absolute inset-0 bg-gradient-to-b from-blue-500/5 via-transparent to-transparent opacity-50 pointer-events-none"></div>
-          <div className="w-20 h-20 bg-blue-500/5 rounded-2xl flex items-center justify-center mb-6 border border-[#262626] group-hover:border-blue-500/30 transition-all duration-300">
-            <FileVideo className="w-10 h-10 text-blue-500" />
+        <div className="bg-[#0a0a0c] border border-white/[0.08] rounded-xl p-12 text-center flex flex-col items-center shadow-lg relative overflow-hidden">
+          <div className="w-14 h-14 bg-blue-500/10 rounded-xl flex items-center justify-center mb-4 border border-blue-500/20">
+            <FileVideo className="w-7 h-7 text-blue-400" />
           </div>
-          <h3 className="text-xl font-semibold text-white mb-2">Workspace is Empty</h3>
-          <p className="text-gray-400 mb-8 max-w-sm text-sm leading-relaxed">No footage detected. Drag and drop your first raw media to start generating synchronized AI transcripts and deep semantic intelligence.</p>
-          <Link href="/upload" className="bg-[#141414] border border-[#262626] hover:bg-[#1a1a1a] hover:border-gray-700 text-white px-6 py-3 rounded-xl transition-all font-medium inline-flex items-center gap-2">
-            Go to Upload Center
+          <h3 className="text-sm font-semibold text-white mb-1">No videos uploaded yet</h3>
+          <p className="text-xs text-gray-400 max-w-sm mb-6 leading-relaxed">
+            Upload your first video asset to generate automated transcripts, timestamp indexing, and Gemini AI insights.
+          </p>
+          <Link href="/upload" className="h-9 px-4 bg-[#141418] hover:bg-[#1c1c22] border border-white/[0.08] hover:border-white/[0.16] text-white text-xs font-medium rounded-lg transition-all inline-flex items-center gap-2">
+            <UploadCloud className="w-3.5 h-3.5 text-blue-400" />
+            <span>Go to Upload Center</span>
           </Link>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {sortedVideos.map((video) => (
             <div 
               key={video.id} 
-              className="bg-[#0A0A0A] border border-[#262626] rounded-2xl overflow-hidden group hover:border-blue-500/40 transition-all duration-300 hover:shadow-[0_12px_40px_rgba(37,99,235,0.08)] flex flex-col cursor-pointer"
+              className="bg-[#0a0a0c] border border-white/[0.08] rounded-xl overflow-hidden group hover:border-white/[0.18] transition-all duration-200 shadow-md hover:shadow-xl flex flex-col cursor-pointer"
               onClick={() => window.location.href = `/videos/${video.id}`}
             >
               
-              {/* Media Thumbnail Visualizer */}
-              <div className="aspect-video bg-[#141414] relative overflow-hidden flex items-center justify-center border-b border-[#262626] group-hover:bg-[#111] transition-colors">
-                {/* Visual grid backdrop mimicking AI detection grid */}
-                <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#3B82F6_1px,transparent_1px)] [background-size:12px_12px] group-hover:opacity-20 transition-opacity"></div>
-                
-                {/* Play Button Indicator */}
-                <div className="w-12 h-12 rounded-full bg-black/60 border border-[#262626] flex items-center justify-center z-10 group-hover:border-blue-500/50 group-hover:bg-blue-500/10 transition-all duration-300">
-                  <PlayCircle className="w-6 h-6 text-gray-400 group-hover:text-blue-500 transition-colors" />
+              {/* Media Card Thumbnail Header */}
+              <div className="aspect-video bg-[#101014] relative overflow-hidden flex items-center justify-center border-b border-white/[0.06] group-hover:bg-[#14141a] transition-colors">
+                <div className="w-10 h-10 rounded-full bg-black/60 border border-white/[0.12] flex items-center justify-center z-10 group-hover:border-blue-500/50 group-hover:scale-105 transition-all duration-200">
+                  <PlayCircle className="w-5 h-5 text-gray-300 group-hover:text-blue-400 transition-colors" />
                 </div>
                 
-                {/* Visualizer overlay highlights */}
-                <div className="absolute bottom-3 left-3 bg-black/80 backdrop-blur-md px-2 py-1 rounded text-[10px] font-mono text-blue-400 border border-[#262626]">
-                  AI RESOLUTION: 4K
+                <div className="absolute bottom-2 left-2.5 bg-black/80 backdrop-blur-md px-2 py-0.5 rounded text-[10px] font-mono text-gray-400 border border-white/[0.08]">
+                  4K • AI READY
                 </div>
-
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-80 z-0"></div>
               </div>
               
-              {/* Card Meta Content */}
-              <div className="p-5 flex flex-col flex-1">
-                <h3 className="text-white font-semibold text-base line-clamp-2 leading-snug group-hover:text-blue-400 transition-colors mb-4 flex-grow">
+              {/* Card Meta Description */}
+              <div className="p-4 flex flex-col flex-1 justify-between space-y-3">
+                <h3 className="text-white font-medium text-xs line-clamp-2 leading-snug group-hover:text-blue-400 transition-colors">
                   {video.title}
                 </h3>
                 
-                <div className="pt-4 flex items-center justify-between border-t border-[#1a1a1a] mt-auto">
-                  <span className="text-xs text-gray-500 flex items-center gap-1.5">
-                    <Calendar className="w-3.5 h-3.5" />
+                <div className="pt-3 flex items-center justify-between border-t border-white/[0.05]">
+                  <span className="text-[11px] text-gray-500 flex items-center gap-1">
+                    <Calendar className="w-3 h-3" />
                     {new Date(video.createdAt).toLocaleDateString()}
                   </span>
                   {getStatusBadge(video.status)}

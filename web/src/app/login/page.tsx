@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import api from '../../lib/api';
 import { useAuthStore } from '../../store/authStore';
-import { Mail, Lock, Eye, EyeOff, Video, ArrowRight, Sparkles, CheckCircle } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, Video, ArrowRight, ArrowLeft, CheckCircle, ShieldCheck, Zap, Sparkles } from 'lucide-react';
 
 function LoginContent() {
   const [email, setEmail] = useState('');
@@ -13,7 +13,7 @@ function LoginContent() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  
+
   const router = useRouter();
   const searchParams = useSearchParams();
   const isRegistered = searchParams.get('registered') === 'true';
@@ -36,94 +36,146 @@ function LoginContent() {
   };
 
   return (
-    <div className="min-h-screen bg-[#000000] flex items-center justify-center p-6 relative overflow-hidden font-sans">
-      {/* Background visual grids & glows */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-blue-500/10 rounded-full blur-[120px] -z-10 pointer-events-none animate-pulse"></div>
-      <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#3B82F6_1px,transparent_1px)] [background-size:24px_24px] -z-20 pointer-events-none"></div>
-
-      <div className="w-full max-w-[460px] bg-[#0A0A0A]/60 backdrop-blur-xl border border-[#262626] rounded-2xl p-8 md:p-10 shadow-2xl relative z-10 hover:border-gray-800 transition-all duration-300">
+    <div className="min-h-screen bg-[#050507] text-gray-100 flex flex-col justify-between font-sans relative overflow-hidden">
+      {/* Top Navbar Header */}
+      <header className="w-full max-w-7xl mx-auto px-6 py-6 flex items-center justify-between z-20">
+        <Link href="/" className="inline-flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors duration-150 group">
+          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+          <span>Back to Home</span>
+        </Link>
         
-        {/* Top Header Logo */}
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-2 text-xl font-bold tracking-tighter text-white text-glow mb-4">
-            <Video className="w-6 h-6 text-blue-500" />
-            VisiCore AI
-          </Link>
-          <h1 className="text-2xl md:text-3xl font-bold text-white mb-2 tracking-tight">Welcome back</h1>
-          <p className="text-sm text-gray-400">Precision video understanding at your fingertips</p>
+        <Link href="/" className="inline-flex items-center gap-2.5 text-lg font-semibold tracking-tight text-white">
+          <div className="w-7 h-7 rounded-lg bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400">
+            <Video className="w-4 h-4" />
+          </div>
+          <span>VisiCore <span className="text-blue-500 font-mono text-xs px-1.5 py-0.5 rounded bg-blue-500/10 border border-blue-500/20">AI</span></span>
+        </Link>
+      </header>
+
+      {/* Main Split Screen Container */}
+      <main className="flex-1 max-w-7xl w-full mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center py-8 z-10">
+        
+        {/* Left Side: Product Value Showcase */}
+        <div className="lg:col-span-7 hidden lg:flex flex-col justify-center space-y-8 pr-8">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-medium w-fit">
+            <Sparkles className="w-3.5 h-3.5" /> Next-Gen Multimodal Intelligence
+          </div>
+
+          <h1 className="text-4xl lg:text-5xl font-bold tracking-tight text-white leading-tight">
+            High-speed video intelligence <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-300 to-white">for modern teams.</span>
+          </h1>
+
+          <p className="text-base text-gray-400 max-w-xl leading-relaxed">
+            Stream, transcribe, and analyze hours of raw video feeds in seconds using Gemini 3.6 Flash and our distributed AI pipeline.
+          </p>
+
+          <div className="grid grid-cols-2 gap-4 pt-4">
+            <div className="bg-[#0c0c10] border border-white/[0.08] p-4 rounded-xl">
+              <div className="w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 mb-3">
+                <Zap className="w-4 h-4" />
+              </div>
+              <h3 className="text-sm font-semibold text-white mb-1">Sub-second Processing</h3>
+              <p className="text-xs text-gray-400 leading-normal">Asynchronous queue architecture handles massive media payloads natively.</p>
+            </div>
+
+            <div className="bg-[#0c0c10] border border-white/[0.08] p-4 rounded-xl">
+              <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 mb-3">
+                <ShieldCheck className="w-4 h-4" />
+              </div>
+              <h3 className="text-sm font-semibold text-white mb-1">Enterprise Ready</h3>
+              <p className="text-xs text-gray-400 leading-normal">Strict HTTP 206 byte-stream encryption & RBAC session persistence.</p>
+            </div>
+          </div>
         </div>
 
-        {isRegistered && !error && (
-          <div className="bg-green-500/10 border border-green-500/30 text-green-400 px-4 py-3.5 rounded-xl mb-6 text-xs leading-relaxed flex items-center gap-2">
-            <CheckCircle className="w-4 h-4 text-green-400 flex-shrink-0 animate-pulse" />
-            <span>Registration successful! Please sign in below.</span>
-          </div>
-        )}
-
-        {error && (
-          <div className="bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3.5 rounded-xl mb-6 text-xs leading-relaxed flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-red-400 flex-shrink-0" />
-            <span>{error}</span>
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Email field */}
-          <div>
-            <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Email Address</label>
-            <div className="relative">
-              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
-              <input 
-                type="email" 
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-[#000000] border border-[#262626] text-white rounded-xl pl-12 pr-4 py-3.5 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-sm placeholder-gray-600 hover:border-gray-700"
-                placeholder="name@company.com"
-              />
+        {/* Right Side: Sleek Sign In Form Card */}
+        <div className="lg:col-span-5 w-full max-w-md mx-auto">
+          <div className="bg-[#0a0a0c] border border-white/[0.09] rounded-2xl p-8 shadow-2xl relative backdrop-blur-2xl">
+            <div className="mb-6">
+              <h2 className="text-xl font-bold text-white tracking-tight">Sign in to your workspace</h2>
+              <p className="text-xs text-gray-400 mt-1">Enter your operational credentials below</p>
             </div>
-          </div>
 
-          {/* Password field */}
-          <div>
-            <div className="flex justify-between items-center mb-2">
-              <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider">Password</label>
-              <a href="#" className="text-xs text-blue-500 hover:text-blue-400 transition-colors">Forgot?</a>
-            </div>
-            <div className="relative">
-              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
-              <input 
-                type={showPassword ? 'text' : 'password'} 
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-[#000000] border border-[#262626] text-white rounded-xl pl-12 pr-12 py-3.5 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-sm placeholder-gray-600 hover:border-gray-700"
-                placeholder="••••••••••••"
-              />
+            {isRegistered && !error && (
+              <div className="bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 px-3.5 py-3 rounded-lg mb-5 text-xs flex items-center gap-2">
+                <CheckCircle className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                <span>Account created successfully. Please sign in below.</span>
+              </div>
+            )}
+
+            {error && (
+              <div className="bg-rose-500/10 border border-rose-500/30 text-rose-300 px-3.5 py-3 rounded-lg mb-5 text-xs flex items-center gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-rose-400" />
+                <span>{error}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-medium text-gray-300 mb-1.5">Email Address</label>
+                <div className="relative">
+                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+                  <input 
+                    type="email" 
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full bg-[#0d0d10] border border-white/[0.08] focus:border-blue-500/80 focus:ring-1 focus:ring-blue-500/50 text-white rounded-lg pl-10 pr-3.5 py-2.5 text-xs placeholder-gray-600 transition-all outline-none"
+                    placeholder="name@company.com"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <div className="flex justify-between items-center mb-1.5">
+                  <label className="block text-xs font-medium text-gray-300">Password</label>
+                  <a href="#" className="text-[11px] text-blue-400 hover:text-blue-300 transition-colors">Forgot password?</a>
+                </div>
+                <div className="relative">
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+                  <input 
+                    type={showPassword ? 'text' : 'password'} 
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full bg-[#0d0d10] border border-white/[0.08] focus:border-blue-500/80 focus:ring-1 focus:ring-blue-500/50 text-white rounded-lg pl-10 pr-10 py-2.5 text-xs placeholder-gray-600 transition-all outline-none"
+                    placeholder="••••••••••••"
+                  />
+                  <button 
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+
               <button 
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors"
+                type="submit" 
+                disabled={loading}
+                className="w-full h-10 bg-blue-600 hover:bg-blue-500 text-white font-medium text-xs rounded-lg transition-all shadow-[0_0_15px_rgba(37,99,235,0.3)] hover:shadow-[0_0_20px_rgba(37,99,235,0.45)] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 mt-6 cursor-pointer"
               >
-                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                {loading ? 'Signing in...' : 'Sign In'}
+                {!loading && <ArrowRight className="w-3.5 h-3.5" />}
               </button>
+            </form>
+
+            <div className="mt-6 pt-5 border-t border-white/[0.06] text-center text-xs text-gray-400">
+              Don&apos;t have an account?{' '}
+              <Link href="/signup" className="text-blue-400 hover:text-blue-300 font-medium transition-colors">
+                Create one now
+              </Link>
             </div>
           </div>
-          
-          <button 
-            type="submit" 
-            disabled={loading}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3.5 rounded-xl transition-all shadow-[0_0_15px_rgba(37,99,235,0.3)] hover:shadow-[0_0_25px_rgba(37,99,235,0.5)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 group mt-8"
-          >
-            {loading ? 'Authenticating...' : 'Sign In'}
-            {!loading && <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />}
-          </button>
-        </form>
-
-        <div className="mt-8 text-center text-sm text-gray-400 border-t border-[#1a1a1a] pt-6">
-          Don&apos;t have an account? <Link href="/signup" className="text-blue-400 hover:text-blue-300 font-semibold transition-colors">Sign up free</Link>
         </div>
-      </div>
+      </main>
+
+      {/* Subtle Footer */}
+      <footer className="w-full max-w-7xl mx-auto px-6 py-6 text-center text-xs text-gray-600 z-10">
+        &copy; {new Date().getFullYear()} VisiCore AI Inc. Precision Media Intelligence.
+      </footer>
     </div>
   );
 }
@@ -131,8 +183,8 @@ function LoginContent() {
 export default function LoginPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-[#000000] flex items-center justify-center">
-        <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+      <div className="min-h-screen bg-[#050507] flex items-center justify-center">
+        <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
       </div>
     }>
       <LoginContent />

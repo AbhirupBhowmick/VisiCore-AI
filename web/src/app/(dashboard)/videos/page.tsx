@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import api from '../../../lib/api';
-import { PlayCircle, Clock, CheckCircle, AlertCircle, FileVideo, Search, Grid, List, Plus, Calendar, Eye, Trash2 } from 'lucide-react';
+import { PlayCircle, Clock, CheckCircle2, AlertCircle, FileVideo, Search, Grid, List, Plus, Calendar, Eye, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 
 interface VideoItem {
@@ -46,21 +46,21 @@ export default function VideoLibraryPage() {
     switch (status) {
       case 'COMPLETED':
         return (
-          <span className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-green-500/10 text-green-400 border border-green-500/20">
-            <CheckCircle className="w-3.5 h-3.5" /> Completed
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-[11px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+            <CheckCircle2 className="w-3 h-3 text-emerald-400" /> Ready
           </span>
         );
       case 'PROCESSING':
       case 'UPLOAD_PENDING':
         return (
-          <span className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/20 animate-pulse">
-            <Clock className="w-3.5 h-3.5 animate-spin" style={{ animationDuration: '3s' }} /> Processing
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-[11px] font-medium bg-blue-500/10 text-blue-400 border border-blue-500/20">
+            <Clock className="w-3 h-3 animate-spin text-blue-400" style={{ animationDuration: '2s' }} /> Processing
           </span>
         );
       case 'FAILED':
         return (
-          <span className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-red-500/10 text-red-400 border border-red-500/20">
-            <AlertCircle className="w-3.5 h-3.5" /> Failed
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-[11px] font-medium bg-rose-500/10 text-rose-400 border border-rose-500/20">
+            <AlertCircle className="w-3 h-3 text-rose-400" /> Failed
           </span>
         );
     }
@@ -68,20 +68,20 @@ export default function VideoLibraryPage() {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center h-[50vh] gap-4">
-        <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-        <div className="text-gray-400 text-sm font-mono tracking-widest uppercase">Fetching Video Vault...</div>
+      <div className="flex flex-col items-center justify-center min-h-[45vh] gap-3 font-sans">
+        <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+        <div className="text-gray-400 text-xs font-mono tracking-wider">Loading Video Vault...</div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="bg-red-500/10 border border-red-500/30 text-red-400 p-6 rounded-2xl flex items-center gap-3">
-        <AlertCircle className="w-6 h-6 flex-shrink-0" />
+      <div className="bg-rose-500/10 border border-rose-500/30 text-rose-300 p-5 rounded-xl flex items-center gap-3 font-sans">
+        <AlertCircle className="w-5 h-5 flex-shrink-0 text-rose-400" />
         <div>
-          <h3 className="font-semibold text-white">System Connectivity Issue</h3>
-          <p className="text-sm text-gray-400 mt-1">Failed to communicate with REST API. Please ensure the backend is healthy.</p>
+          <h3 className="text-xs font-semibold text-white">System Connectivity Issue</h3>
+          <p className="text-xs text-gray-400 mt-0.5">Failed to communicate with REST API. Please ensure the backend is healthy.</p>
         </div>
       </div>
     );
@@ -94,95 +94,96 @@ export default function VideoLibraryPage() {
   const sortedVideos = filteredVideos.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
   return (
-    <div className="pb-12 font-sans">
+    <div className="space-y-6 font-sans">
       
       {/* Title Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-white/[0.06]">
         <div>
-          <h1 className="text-3xl font-bold text-white mb-2 tracking-tight">Video Vault</h1>
-          <p className="text-gray-400 text-sm">Review processing logs, transcripts, and AI models across all telemetry footage.</p>
+          <h1 className="text-2xl font-bold text-white tracking-tight">Video Vault</h1>
+          <p className="text-xs text-gray-400 mt-0.5">Review, search, and manage processed video telemetry assets.</p>
         </div>
-        <Link href="/upload" className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-medium transition-all shadow-[0_0_15px_rgba(37,99,235,0.3)] flex items-center gap-2 self-start md:self-auto">
-          <Plus className="w-5 h-5" />
+        <Link 
+          href="/upload" 
+          className="h-9 px-4 bg-blue-600 hover:bg-blue-500 text-white font-medium text-xs rounded-lg transition-all duration-150 shadow-[0_0_12px_rgba(37,99,235,0.3)] hover:shadow-[0_0_18px_rgba(37,99,235,0.5)] active:scale-[0.98] inline-flex items-center justify-center gap-1.5 cursor-pointer self-start sm:self-auto"
+        >
+          <Plus className="w-4 h-4" />
           <span>Upload Footage</span>
         </Link>
       </div>
 
-      {/* Control bar: search & layout toggles */}
-      <div className="flex flex-col md:flex-row gap-4 justify-between items-center bg-[#0A0A0A] border border-[#262626] p-4 rounded-2xl mb-8">
-        <div className="relative w-full md:w-80">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+      {/* Control Bar */}
+      <div className="flex flex-col sm:flex-row gap-3 justify-between items-center bg-[#0a0a0c] border border-white/[0.08] p-3 rounded-xl">
+        <div className="relative w-full sm:w-72">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500" />
           <input 
             type="text" 
-            placeholder="Search catalog..." 
+            placeholder="Filter catalog..." 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-[#000000] border border-[#262626] text-white rounded-xl pl-10 pr-4 py-2.5 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors text-sm placeholder-gray-600"
+            className="w-full bg-[#0d0d10] border border-white/[0.08] focus:border-blue-500/80 focus:ring-1 focus:ring-blue-500/50 text-white rounded-lg pl-9 pr-3.5 py-1.5 text-xs placeholder-gray-600 transition-all outline-none"
           />
         </div>
         
-        <div className="flex items-center gap-3 self-end md:self-auto">
-          <div className="flex items-center bg-[#000000] border border-[#262626] p-1 rounded-xl">
+        <div className="flex items-center gap-2 self-end sm:self-auto">
+          <div className="flex items-center bg-[#0d0d10] border border-white/[0.08] p-1 rounded-lg">
             <button 
               onClick={() => setViewMode('grid')}
-              className={`p-2 rounded-lg transition-colors ${viewMode === 'grid' ? 'bg-blue-500/10 text-blue-500' : 'text-gray-500 hover:text-white'}`}
+              className={`p-1.5 rounded transition-colors cursor-pointer ${viewMode === 'grid' ? 'bg-white/[0.08] text-white' : 'text-gray-500 hover:text-gray-300'}`}
             >
-              <Grid className="w-4 h-4" />
+              <Grid className="w-3.5 h-3.5" />
             </button>
             <button 
               onClick={() => setViewMode('list')}
-              className={`p-2 rounded-lg transition-colors ${viewMode === 'list' ? 'bg-blue-500/10 text-blue-500' : 'text-gray-500 hover:text-white'}`}
+              className={`p-1.5 rounded transition-colors cursor-pointer ${viewMode === 'list' ? 'bg-white/[0.08] text-white' : 'text-gray-500 hover:text-gray-300'}`}
             >
-              <List className="w-4 h-4" />
+              <List className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
       </div>
 
       {sortedVideos.length === 0 ? (
-        <div className="bg-[#0A0A0A] border border-[#262626] rounded-2xl p-16 text-center flex flex-col items-center">
-          <div className="w-20 h-20 bg-blue-500/5 rounded-2xl flex items-center justify-center mb-6 border border-[#262626]">
-            <FileVideo className="w-10 h-10 text-blue-500" />
+        <div className="bg-[#0a0a0c] border border-white/[0.08] rounded-xl p-12 text-center flex flex-col items-center">
+          <div className="w-12 h-12 bg-blue-500/10 rounded-xl flex items-center justify-center mb-3 border border-blue-500/20">
+            <FileVideo className="w-6 h-6 text-blue-400" />
           </div>
-          <h3 className="text-xl font-semibold text-white mb-2">No videos matched</h3>
-          <p className="text-gray-400 mb-6 max-w-sm text-sm">Upload more files or adjust search keywords to view processing catalogs.</p>
+          <h3 className="text-sm font-semibold text-white mb-1">No videos matched query</h3>
+          <p className="text-xs text-gray-400 max-w-sm">Upload more files or adjust search keywords to view processing catalogs.</p>
         </div>
       ) : viewMode === 'grid' ? (
         /* GRID VIEW */
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {sortedVideos.map((video) => (
             <div 
               key={video.id} 
-              className="bg-[#0A0A0A] border border-[#262626] rounded-2xl overflow-hidden group hover:border-blue-500/40 transition-all duration-300 hover:shadow-[0_12px_40px_rgba(37,99,235,0.08)] flex flex-col cursor-pointer relative"
+              className="bg-[#0a0a0c] border border-white/[0.08] rounded-xl overflow-hidden group hover:border-white/[0.18] transition-all duration-200 shadow-md hover:shadow-xl flex flex-col cursor-pointer relative"
               onClick={() => window.location.href = `/videos/${video.id}`}
             >
-              <div className="aspect-video bg-[#141414] relative overflow-hidden flex items-center justify-center border-b border-[#262626]">
-                <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#3B82F6_1px,transparent_1px)] [background-size:12px_12px]"></div>
-                
-                {/* Trash Button */}
+              <div className="aspect-video bg-[#101014] relative overflow-hidden flex items-center justify-center border-b border-white/[0.06]">
                 <button
                   onClick={(e) => handleDeleteVideo(e, video.id)}
-                  className="absolute top-3 right-3 z-20 w-8 h-8 rounded-lg bg-black/60 hover:bg-red-600 border border-[#262626] hover:border-red-500 flex items-center justify-center text-gray-400 hover:text-white transition-all duration-200 active:scale-95 cursor-pointer shadow-md"
+                  className="absolute top-2.5 right-2.5 z-20 w-7 h-7 rounded-md bg-black/60 hover:bg-rose-600 border border-white/[0.1] hover:border-rose-500 flex items-center justify-center text-gray-400 hover:text-white transition-all duration-150 cursor-pointer shadow-md"
                   title="Delete video"
                 >
-                  <Trash2 className="w-4 h-4" />
+                  <Trash2 className="w-3.5 h-3.5" />
                 </button>
 
-                <div className="w-12 h-12 rounded-full bg-black/60 border border-[#262626] flex items-center justify-center z-10 group-hover:border-blue-500/50 group-hover:bg-blue-500/10 transition-all duration-300">
-                  <PlayCircle className="w-6 h-6 text-gray-400 group-hover:text-blue-500 transition-colors" />
+                <div className="w-10 h-10 rounded-full bg-black/60 border border-white/[0.12] flex items-center justify-center z-10 group-hover:border-blue-500/50 group-hover:scale-105 transition-all duration-200">
+                  <PlayCircle className="w-5 h-5 text-gray-300 group-hover:text-blue-400 transition-colors" />
                 </div>
-                <div className="absolute bottom-3 left-3 bg-black/80 backdrop-blur-md px-2 py-1 rounded text-[10px] font-mono text-blue-400 border border-[#262626]">
-                  RESOLVED 4K
+                <div className="absolute bottom-2 left-2.5 bg-black/80 backdrop-blur-md px-2 py-0.5 rounded text-[10px] font-mono text-gray-400 border border-white/[0.08]">
+                  4K • READY
                 </div>
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-80 z-0"></div>
               </div>
-              <div className="p-5 flex flex-col flex-1">
-                <h3 className="text-white font-semibold text-base line-clamp-2 leading-snug group-hover:text-blue-400 transition-colors mb-4 flex-grow">
+
+              <div className="p-4 flex flex-col flex-1 justify-between space-y-3">
+                <h3 className="text-white font-medium text-xs line-clamp-2 leading-snug group-hover:text-blue-400 transition-colors">
                   {video.title}
                 </h3>
-                <div className="pt-4 flex items-center justify-between border-t border-[#1a1a1a] mt-auto">
-                  <span className="text-xs text-gray-500 flex items-center gap-1.5">
-                    <Calendar className="w-3.5 h-3.5" />
+
+                <div className="pt-3 flex items-center justify-between border-t border-white/[0.05]">
+                  <span className="text-[11px] text-gray-500 flex items-center gap-1">
+                    <Calendar className="w-3 h-3" />
                     {new Date(video.createdAt).toLocaleDateString()}
                   </span>
                   {getStatusBadge(video.status)}
@@ -193,37 +194,37 @@ export default function VideoLibraryPage() {
         </div>
       ) : (
         /* LIST VIEW */
-        <div className="space-y-4">
+        <div className="space-y-2.5">
           {sortedVideos.map((video) => (
             <div 
               key={video.id}
-              className="bg-[#0A0A0A] border border-[#262626] hover:border-blue-500/40 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 cursor-pointer hover:shadow-[0_8px_30px_rgba(37,99,235,0.05)] transition-all duration-300 group"
+              className="bg-[#0a0a0c] border border-white/[0.08] hover:border-white/[0.16] rounded-xl p-3 flex flex-col sm:flex-row items-center justify-between gap-3 cursor-pointer transition-all duration-150 group"
               onClick={() => window.location.href = `/videos/${video.id}`}
             >
-              <div className="flex items-center gap-4 w-full sm:w-auto">
-                <div className="w-16 h-12 bg-[#141414] border border-[#262626] rounded-xl flex items-center justify-center flex-shrink-0 group-hover:border-blue-500/30 transition-colors relative">
-                  <PlayCircle className="w-5 h-5 text-gray-500 group-hover:text-blue-500 transition-colors" />
+              <div className="flex items-center gap-3 w-full sm:w-auto">
+                <div className="w-12 h-9 bg-[#101014] border border-white/[0.06] rounded-md flex items-center justify-center flex-shrink-0 group-hover:border-blue-500/30 transition-colors">
+                  <PlayCircle className="w-4 h-4 text-gray-400 group-hover:text-blue-400 transition-colors" />
                 </div>
                 <div className="min-w-0">
-                  <h3 className="text-white font-semibold text-sm truncate group-hover:text-blue-400 transition-colors">{video.title}</h3>
-                  <span className="text-xs text-gray-500 flex items-center gap-1 mt-1">
-                    <Calendar className="w-3.5 h-3.5" />
+                  <h3 className="text-white font-medium text-xs truncate group-hover:text-blue-400 transition-colors">{video.title}</h3>
+                  <span className="text-[11px] text-gray-500 flex items-center gap-1 mt-0.5">
+                    <Calendar className="w-3 h-3" />
                     {new Date(video.createdAt).toLocaleDateString()}
                   </span>
                 </div>
               </div>
-              <div className="flex items-center gap-3 self-end sm:self-auto">
+
+              <div className="flex items-center gap-2.5 self-end sm:self-auto">
                 {getStatusBadge(video.status)}
-                <div className="w-9 h-9 rounded-xl bg-[#141414] border border-[#262626] flex items-center justify-center text-gray-400 group-hover:text-white group-hover:bg-blue-600 group-hover:border-blue-500 transition-all">
-                  <Eye className="w-4 h-4" />
+                <div className="w-7 h-7 rounded-md bg-[#141418] border border-white/[0.08] flex items-center justify-center text-gray-400 group-hover:text-white group-hover:bg-blue-600 transition-all">
+                  <Eye className="w-3.5 h-3.5" />
                 </div>
-                {/* Trash Button */}
                 <button
                   onClick={(e) => handleDeleteVideo(e, video.id)}
-                  className="w-9 h-9 rounded-xl bg-[#141414] hover:bg-red-600 border border-[#262626] hover:border-red-500 flex items-center justify-center text-gray-400 hover:text-white transition-all duration-200 active:scale-95 cursor-pointer"
+                  className="w-7 h-7 rounded-md bg-[#141418] hover:bg-rose-600 border border-white/[0.08] hover:border-rose-500 flex items-center justify-center text-gray-400 hover:text-white transition-all cursor-pointer"
                   title="Delete video"
                 >
-                  <Trash2 className="w-4 h-4" />
+                  <Trash2 className="w-3.5 h-3.5" />
                 </button>
               </div>
             </div>

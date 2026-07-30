@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import api from '../../lib/api';
-import { Mail, Lock, Eye, EyeOff, Video, ArrowRight, Sparkles } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, Video, ArrowRight, ArrowLeft, CheckCircle2, Sparkles, Cpu, Layers } from 'lucide-react';
 
 export default function SignupPage() {
   const [email, setEmail] = useState('');
@@ -12,8 +12,9 @@ export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  
+
   const router = useRouter();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -30,84 +31,150 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#000000] flex items-center justify-center p-6 relative overflow-hidden font-sans">
-      {/* Background visual grids & glows */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-blue-500/10 rounded-full blur-[120px] -z-10 pointer-events-none animate-pulse"></div>
-      <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#3B82F6_1px,transparent_1px)] [background-size:24px_24px] -z-20 pointer-events-none"></div>
-
-      <div className="w-full max-w-[460px] bg-[#0A0A0A]/60 backdrop-blur-xl border border-[#262626] rounded-2xl p-8 md:p-10 shadow-2xl relative z-10 hover:border-gray-800 transition-all duration-300">
+    <div className="min-h-screen bg-[#050507] text-gray-100 flex flex-col justify-between font-sans relative overflow-hidden">
+      {/* Top Navbar Header */}
+      <header className="w-full max-w-7xl mx-auto px-6 py-6 flex items-center justify-between z-20">
+        <Link href="/" className="inline-flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors duration-150 group">
+          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+          <span>Back to Home</span>
+        </Link>
         
-        {/* Top Header Logo */}
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-2 text-xl font-bold tracking-tighter text-white text-glow mb-4">
-            <Video className="w-6 h-6 text-blue-500" />
-            VisiCore AI
-          </Link>
-          <h1 className="text-2xl md:text-3xl font-bold text-white mb-2 tracking-tight">Create Account</h1>
-          <p className="text-sm text-gray-400">Join VisiCore AI to process & understand video feeds</p>
-        </div>
-
-        {error && (
-          <div className="bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3.5 rounded-xl mb-6 text-xs leading-relaxed flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-red-400 flex-shrink-0" />
-            <span>{error}</span>
+        <Link href="/" className="inline-flex items-center gap-2.5 text-lg font-semibold tracking-tight text-white">
+          <div className="w-7 h-7 rounded-lg bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400">
+            <Video className="w-4 h-4" />
           </div>
-        )}
+          <span>VisiCore <span className="text-blue-500 font-mono text-xs px-1.5 py-0.5 rounded bg-blue-500/10 border border-blue-500/20">AI</span></span>
+        </Link>
+      </header>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Email field */}
-          <div>
-            <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Email Address</label>
-            <div className="relative">
-              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
-              <input 
-                type="email" 
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-[#000000] border border-[#262626] text-white rounded-xl pl-12 pr-4 py-3.5 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-sm placeholder-gray-600 hover:border-gray-700"
-                placeholder="name@company.com"
-              />
+      {/* Main Split Screen Container */}
+      <main className="flex-1 max-w-7xl w-full mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center py-8 z-10">
+        
+        {/* Left Side: Features & Value Proposition */}
+        <div className="lg:col-span-7 hidden lg:flex flex-col justify-center space-y-8 pr-8">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-medium w-fit">
+            <Sparkles className="w-3.5 h-3.5" /> Start Analyzing Videos in Minutes
+          </div>
+
+          <h1 className="text-4xl lg:text-5xl font-bold tracking-tight text-white leading-tight">
+            Transform raw video assets <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-300 to-white">into structured insights.</span>
+          </h1>
+
+          <p className="text-base text-gray-400 max-w-xl leading-relaxed">
+            Create an account to gain immediate access to automated video transcription, timestamp indexing, smart summaries, and interactive Copilot analysis.
+          </p>
+
+          <div className="space-y-3 pt-2">
+            <div className="flex items-start gap-3">
+              <div className="w-5 h-5 rounded-full bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400 mt-0.5">
+                <CheckCircle2 className="w-3.5 h-3.5" />
+              </div>
+              <div>
+                <h4 className="text-xs font-semibold text-white">Gemini 3.6 Flash Inference</h4>
+                <p className="text-[11px] text-gray-400">Deep multimodal processing for full-length video streams.</p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3">
+              <div className="w-5 h-5 rounded-full bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400 mt-0.5">
+                <Cpu className="w-3.5 h-3.5" />
+              </div>
+              <div>
+                <h4 className="text-xs font-semibold text-white">Direct Presigned Cloud Storage</h4>
+                <p className="text-[11px] text-gray-400">Zero-latency uploads directly to Cloudflare R2 object storage.</p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3">
+              <div className="w-5 h-5 rounded-full bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400 mt-0.5">
+                <Layers className="w-3.5 h-3.5" />
+              </div>
+              <div>
+                <h4 className="text-xs font-semibold text-white">Real-Time Search & Interactive Copilot</h4>
+                <p className="text-[11px] text-gray-400">Query your video collection directly using natural language prompts.</p>
+              </div>
             </div>
           </div>
+        </div>
 
-          {/* Password field */}
-          <div>
-            <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Password</label>
-            <div className="relative">
-              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
-              <input 
-                type={showPassword ? 'text' : 'password'} 
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-[#000000] border border-[#262626] text-white rounded-xl pl-12 pr-12 py-3.5 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-sm placeholder-gray-600 hover:border-gray-700"
-                placeholder="Create a strong password"
-              />
+        {/* Right Side: Sleek Signup Form Card */}
+        <div className="lg:col-span-5 w-full max-w-md mx-auto">
+          <div className="bg-[#0a0a0c] border border-white/[0.09] rounded-2xl p-8 shadow-2xl relative backdrop-blur-2xl">
+            <div className="mb-6">
+              <h2 className="text-xl font-bold text-white tracking-tight">Create your account</h2>
+              <p className="text-xs text-gray-400 mt-1">Get started with your free workspace access</p>
+            </div>
+
+            {error && (
+              <div className="bg-rose-500/10 border border-rose-500/30 text-rose-300 px-3.5 py-3 rounded-lg mb-5 text-xs flex items-center gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-rose-400" />
+                <span>{error}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-medium text-gray-300 mb-1.5">Email Address</label>
+                <div className="relative">
+                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+                  <input 
+                    type="email" 
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full bg-[#0d0d10] border border-white/[0.08] focus:border-blue-500/80 focus:ring-1 focus:ring-blue-500/50 text-white rounded-lg pl-10 pr-3.5 py-2.5 text-xs placeholder-gray-600 transition-all outline-none"
+                    placeholder="name@company.com"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-gray-300 mb-1.5">Password</label>
+                <div className="relative">
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+                  <input 
+                    type={showPassword ? 'text' : 'password'} 
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full bg-[#0d0d10] border border-white/[0.08] focus:border-blue-500/80 focus:ring-1 focus:ring-blue-500/50 text-white rounded-lg pl-10 pr-10 py-2.5 text-xs placeholder-gray-600 transition-all outline-none"
+                    placeholder="At least 8 characters"
+                  />
+                  <button 
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+
               <button 
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors"
+                type="submit" 
+                disabled={loading}
+                className="w-full h-10 bg-blue-600 hover:bg-blue-500 text-white font-medium text-xs rounded-lg transition-all shadow-[0_0_15px_rgba(37,99,235,0.3)] hover:shadow-[0_0_20px_rgba(37,99,235,0.45)] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 mt-6 cursor-pointer"
               >
-                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                {loading ? 'Creating account...' : 'Get Started Free'}
+                {!loading && <ArrowRight className="w-3.5 h-3.5" />}
               </button>
+            </form>
+
+            <div className="mt-6 pt-5 border-t border-white/[0.06] text-center text-xs text-gray-400">
+              Already have an account?{' '}
+              <Link href="/login" className="text-blue-400 hover:text-blue-300 font-medium transition-colors">
+                Sign in instead
+              </Link>
             </div>
           </div>
-          
-          <button 
-            type="submit" 
-            disabled={loading}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3.5 rounded-xl transition-all shadow-[0_0_15px_rgba(37,99,235,0.3)] hover:shadow-[0_0_25px_rgba(37,99,235,0.5)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 group mt-8"
-          >
-            {loading ? 'Creating account...' : 'Get Started Free'}
-            {!loading && <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />}
-          </button>
-        </form>
-
-        <div className="mt-8 text-center text-sm text-gray-400 border-t border-[#1a1a1a] pt-6">
-          Already have an account? <Link href="/login" className="text-blue-400 hover:text-blue-300 font-semibold transition-colors">Log in</Link>
         </div>
-      </div>
+      </main>
+
+      {/* Subtle Footer */}
+      <footer className="w-full max-w-7xl mx-auto px-6 py-6 text-center text-xs text-gray-600 z-10">
+        &copy; {new Date().getFullYear()} VisiCore AI Inc. Precision Media Intelligence.
+      </footer>
     </div>
   );
 }
